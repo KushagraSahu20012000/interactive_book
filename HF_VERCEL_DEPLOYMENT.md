@@ -43,11 +43,12 @@ This deployment keeps the app online without your system running.
 ## 3. Deploy Frontend to Vercel
 
 1. Import your repository in Vercel.
-2. Set Root Directory to `interactive_book/frontend`.
-3. Vercel picks [frontend/vercel.json](frontend/vercel.json) automatically.
-4. Set environment variable:
+2. Keep Root Directory as `./`.
+3. Vercel will use [vercel.json](vercel.json) and deploy only the frontend service from [frontend](frontend).
+4. If Vercel shows a backend service in the dashboard, remove it. Backend must stay on Hugging Face Space.
+5. Set environment variable:
    - `VITE_BACKEND_URL=https://<your-backend-space>.hf.space`
-5. Deploy.
+6. Deploy.
 
 ## 4. Post-Deploy Validation
 
