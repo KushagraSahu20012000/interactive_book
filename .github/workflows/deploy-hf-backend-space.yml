@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "backend/**"
-      - "Assets/sample books/environment - 5-10/**"
       - ".github/workflows/deploy-hf-backend-space.yml"
   workflow_dispatch:
 
@@ -62,14 +61,6 @@ jobs:
             --exclude "node_modules" \
             --exclude ".env" \
             "$GITHUB_WORKSPACE/backend/" "$WORKDIR/"
-
-          mkdir -p "$WORKDIR/Assets/sample books"
-          rsync -av --delete \
-            --include "*/" \
-            --include "section_text.txt" \
-            --exclude "*" \
-            "$GITHUB_WORKSPACE/Assets/sample books/environment - 5-10/" \
-            "$WORKDIR/Assets/sample books/environment - 5-10/"
 
           cd "$WORKDIR"
           if [ -n "$(git status --porcelain)" ]; then
