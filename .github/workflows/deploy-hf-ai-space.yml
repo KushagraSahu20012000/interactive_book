@@ -42,6 +42,18 @@ jobs:
           WORKDIR="$(mktemp -d)"
           REPO_URL="https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}"
 
+          WHOAMI_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${HF_TOKEN}" https://huggingface.co/api/whoami-v2)"
+          if [ "$WHOAMI_STATUS" != "200" ]; then
+            echo "HF_TOKEN is invalid or expired (whoami-v2 status: ${WHOAMI_STATUS})"
+            exit 1
+          fi
+
+          if ! git ls-remote "$REPO_URL" >/dev/null 2>&1; then
+            echo "HF token does not have access to spaces/${HF_USERNAME}/${HF_SPACE}"
+            echo "Use a WRITE token from the same HF account (or a collaborator with write access)."
+            exit 1
+          fi
+
           git clone "$REPO_URL" "$WORKDIR"
 
           rsync -av --delete \
