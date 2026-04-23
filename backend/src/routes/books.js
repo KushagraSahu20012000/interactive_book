@@ -6,6 +6,7 @@ import { SamplePage } from "../models/SamplePage.js";
 import { GenerationTask } from "../models/GenerationTask.js";
 import { submitCreateBookJob, submitNextPageJob } from "../services/aiClient.js";
 import { monitorTaskLoop } from "../services/taskMonitor.js";
+import { attachAuthOptional, requireAuth } from "../middleware/auth.js";
 
 export function createBooksRouter(io) {
   const router = Router();
@@ -13,9 +14,14 @@ export function createBooksRouter(io) {
   const validNeurotypes = new Set(["ADHD", "Dyslexia", "Autism", "None"]);
   const validLanguages = new Set(["English", "Hindi"]);
 
-  const getBookRecord = async (bookId) => {
+  router.use(attachAuthOptional);
+
+  const getBookRecord = async (bookId, userId = null) => {
     const [book, sampleBook] = await Promise.all([Book.findById(bookId), SampleBook.findById(bookId)]);
     if (book) {
+      if (!userId || String(book.userId) !== String(userId)) {
+        return null;
+      }
       return { kind: "book", doc: book };
     }
     if (sampleBook) {
@@ -24,27 +30,41 @@ export function createBooksRouter(io) {
     return null;
   };
 
-  router.get("/", async (_req, res, next) => {
+  router.get("/", async (req, res, next) => {
     try {
-      const [books, sampleBooks] = await Promise.all([
-        Book.find()
+      const userId = req.auth?.sub ? String(req.auth.sub) : null;
+      const [books, sampleBooks, totalActiveGeneratedBooks] = await Promise.all([
+        userId
+          ? Book.find({ userId })
           .sort({ createdAt: -1 })
           .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt")
-          .lean(),
+          .lean()
+          : Promise.resolve([]),
         SampleBook.find()
           .sort({ createdAt: -1 })
           .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt isSample")
-          .lean()
+          .lean(),
+        Book.countDocuments({ status: { $ne: "failed" } })
       ]);
 
-      return res.json({ books: [...sampleBooks, ...books] });
+      const activeSampleBooks = sampleBooks.filter((book) => book.status !== "failed").length;
+
+      return res.json({
+        books: [...sampleBooks, ...books],
+        liveCountOverall: totalActiveGeneratedBooks + activeSampleBooks
+      });
     } catch (error) {
       return next(error);
     }
   });
 
-  router.post("/", async (req, res, next) => {
+  router.post("/", requireAuth, async (req, res, next) => {
     try {
+      const userId = String(req.auth?.sub || "");
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const {
         topic,
         description = "",
@@ -68,6 +88,7 @@ export function createBooksRouter(io) {
       }
 
       const book = await Book.create({
+        userId,
         topic: normalizedTopic,
         description: normalizedDescription,
         ageGroup,
@@ -118,7 +139,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId);
+      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -142,7 +163,7 @@ export function createBooksRouter(io) {
 
   router.post("/:bookId/next", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId);
+      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -227,7 +248,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/pages/:pageNumber/audio", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId);
+      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -303,7 +324,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/pages", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId);
+      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -321,7 +342,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/progress", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId);
+      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -340,7 +361,7 @@ export function createBooksRouter(io) {
 
   router.delete("/:bookId", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId);
+      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }

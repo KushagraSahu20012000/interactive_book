@@ -456,7 +456,7 @@ const Books = () => {
           <form onSubmit={onCreate} className="w-full max-w-xl bg-card brutal-border brutal-shadow-lg p-6 space-y-4">
             <h2 className="font-display text-3xl uppercase">Create New Book</h2>
               <p className="font-body font-bold text-xs sm:text-sm bg-brainy-yellow/50 brutal-border px-3 py-2">
-                Built with 100% open-source, free AI magic: please bear with occasional content-quality hiccups and, of course, the stock images while we keep leveling this up.
+                Built with 100% open-source, free AI magic: our content is still in its awkward glow-up phase right now, and we are actively leveling it up (stock images included).
               </p>
 
             <label className="block font-bold text-sm uppercase">

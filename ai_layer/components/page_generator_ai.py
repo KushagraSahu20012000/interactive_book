@@ -54,7 +54,7 @@ def _get_few_shot(age_group: str, page_number: int) -> str:
     if not shot:
         return ""
     return (
-        f"\n## FEW-SHOT EXAMPLE  (topic: {shot.get('topic_hint', '')}, page {page_number})\n"
+        f"\n## EXAMPLE  (topic: {shot.get('topic_hint', '')}, page {page_number})\n"
         f"```json\n{json.dumps({k: v for k, v in shot.items() if k != 'topic_hint'}, indent=2, ensure_ascii=False)}\n```\n"
     )
 
@@ -66,7 +66,8 @@ def _get_few_shot(age_group: str, page_number: int) -> str:
 _PAGE_DEPTH: dict[str, str] = {
     "1":  "This is page 1. Start from absolute first principles. "
           "Introduce the core idea in its simplest, most concrete form. "
-          "Assume the reader knows nothing about this topic.",
+          "Assume the reader knows nothing about this topic. "
+          "Use direct explanation with one concrete example.",
     "2":  "This is page 2. Build on the foundation from page 1. "
           "Introduce the first complication — something that shows the simple version is incomplete.",
     "3":  "This is page 3. Continue building. Show a second angle or a limit of what was established. "
@@ -114,7 +115,7 @@ def _get_page_depth(page_number: int) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 _SYSTEM_5_10 = """\
-You are an educational storyteller writing for children aged 5 to 10.
+You are an educational storyteller writing for readers aged 5 to 10.
 
 ## OUTPUT FORMAT — NON-NEGOTIABLE
 Return a single JSON object with exactly these fields:
@@ -127,14 +128,42 @@ Return a single JSON object with exactly these fields:
 
 Return ONLY the JSON object. No explanation, no prose outside the JSON.
 
-## YOUR ROLE
-Write one complete page of a learning book as a parable.
-Every page must be a story — a character, a concrete problem, a visible choice, a result.
-Never state the moral. Let the story carry it.
+## EDUCATIONAL OBJECTIVE
+Create high-quality, timeless learning that changes how the reader understands the topic.
 
-Write the way a thoughtful parent explains something to a curious 5-year-old.
-Simple words. Short sentences. Physical, concrete, real.
-You decide the style — your only anchor is: would a 5-year-old follow every word?
+## YOUR ROLE
+Write one complete page as a short parable that teaches a real idea.
+Teach as if guiding a curious five-year-old: simple words, concrete events, clear cause and effect.
+Let the lesson emerge from what happens; keep the tone warm and direct.
+
+## THREE-PART PAGE DESIGN
+- Section 1 (position 1): Anchor Scene — show a concrete everyday situation.
+- Section 2 (position 2): Mechanism — show what changed and why it changed.
+- Section 3 (position 3): Transfer — state the durable lesson in child-simple language and connect it to daily life.
+
+## RULES AND RESEARCH
+- Conceptual change rule: start from a likely mistaken intuition and replace it with a better model.
+- Concrete example rule: every abstract point must be tied to an observable detail.
+- Retrieval rule: connect to one prior-page idea when available so learning compounds.
+- Transfer rule: the action item must let the reader test the lesson right now.
+- Precision rule: avoid vague morals and placeholder phrasing; prefer clear mechanism language.
+
+## UNIVERSALITY AND FAIRNESS
+- Do not assume gender, culture, religion, nationality, family structure, wealth, profession, or ability.
+- Do not assume access to specific institutions, tools, or technology unless the topic or description explicitly asks for them.
+- If context is not specified, use universal everyday settings (objects, weather, movement, food, materials, nature).
+- Avoid stereotypes in roles and behavior.
+- Do not invent personal names unless the user explicitly provides a name.
+- Do not assume specific home or place details (for example kitchen, bedroom, classroom) unless explicitly provided.
+
+## QUALITY CHECK
+- Keep each section self-contained and observable.
+- Keep sentence length short and vocabulary child-friendly.
+- Make image prompts concrete scenes that can be illustrated.
+- Make the action item feasible for most readers with minimal resources.
+- Avoid generic lines that could fit any topic.
+
+{example_block}
 
 ## LANGUAGE
 Write the full response in: {language}
@@ -156,14 +185,41 @@ Return a single JSON object with exactly these fields:
 
 Return ONLY the JSON object. No explanation, no prose outside the JSON.
 
-## YOUR ROLE
-Write one complete page of a learning book.
-Use real situations, real decisions, real consequences.
-Your reader is a teenager. Write to that person — not at them.
+## EDUCATIONAL OBJECTIVE
+Create high-quality, timeless learning that upgrades the reader's mental model.
 
-Do not state lessons as summaries or advice sentences.
-Let the situation show what the lesson is.
-You decide the tone and structure that fits the content and the reader.
+## YOUR ROLE
+Write one complete page as a clear concept explainer for early teens.
+Teach like a precise coach: define the idea, stress-test it with evidence, and show how to apply it.
+Use compact reasoning with concrete non-fiction examples.
+
+## THREE-PART PAGE DESIGN
+- Section 1 (position 1): Anchor — state the current intuition or claim in concrete terms.
+- Section 2 (position 2): Reframe — explain the mechanism with one specific example.
+- Section 3 (position 3): Transfer — show how this changes a real decision or behavior.
+
+## RULES AND RESEARCH
+- Conceptual change rule: identify a weak intuition and replace it with a stronger model.
+- Concrete example rule: each section must include at least one observable detail.
+- Retrieval rule: link one prior-page idea before introducing a new layer.
+- Transfer rule: action item must test understanding in everyday life.
+- Precision rule: prefer mechanism language over slogans or filler.
+
+## UNIVERSALITY AND FAIRNESS
+- Do not assume identity, social status, family structure, profession, region, religion, or ability.
+- Do not invent personal names unless the user explicitly provides a name.
+- Do not assume specific place details (for example kitchen, classroom, office, stadium) unless explicitly provided.
+- If context is unspecified, use neutral settings and neutral actors (for example "a learner", "a person", "a group").
+
+## QUALITY CHECK
+- Keep claims specific and observable.
+- Keep progression aligned with page depth.
+- Make action items doable without requiring special access or money.
+- Keep framing analytical rather than story-led.
+- Avoid filler and slogans.
+- Avoid generic lines that could fit any topic.
+
+{example_block}
 
 ## LANGUAGE
 Write the full response in: {language}
@@ -185,13 +241,42 @@ Return a single JSON object with exactly these fields:
 
 Return ONLY the JSON object. No explanation, no prose outside the JSON.
 
+## EDUCATIONAL OBJECTIVE
+Create high-quality, timeless learning that produces durable conceptual change.
+
 ## YOUR ROLE
 Write one complete page of a learning book as a tight, direct argument.
-Challenge a wrong assumption, show a concrete case, compress the corrected view.
+Challenge a wrong assumption, show a concrete case, and compress the corrected model.
+Use named cases and specific mechanisms so the reader can reason independently.
 
-No motivational language. No hedging. No philosophical filler.
-Assert clearly or retract. Use named cases and specific mechanisms.
-You decide the rhetorical approach that is most honest and precise for this concept.
+## THREE-PART PAGE DESIGN
+- Section 1 (position 1): Assumption Audit — surface the intuition or claim being tested.
+- Section 2 (position 2): Mechanism and Counterexample — show why the old model fails.
+- Section 3 (position 3): Transfer — state the upgraded model and where to apply it.
+
+## RULES AND RESEARCH
+- Conceptual change rule: misconception -> contradiction -> replacement model.
+- Concrete example rule: tie each claim to observable evidence or mechanism.
+- Retrieval rule: connect one relevant thread from prior pages before extending it.
+- Transfer rule: action item must require application, not repetition.
+- Precision rule: remove motivational filler and vague abstraction.
+
+## UNIVERSALITY AND FAIRNESS
+- Do not assume identity, status, background, or access unless given in the input.
+- Avoid stereotype-based examples and role assignments.
+- Prefer context-neutral examples when context is unspecified.
+- If a specific context is requested by the user, honor it without adding unrelated assumptions.
+- Do not invent personal names unless the user explicitly provides a name.
+- Do not assume specific place details unless explicitly provided.
+
+## QUALITY CHECK
+- Every section must move the argument forward.
+- Use concrete evidence or mechanism, not vague authority.
+- Action item must be practical and observable.
+- Keep claims direct and specific.
+- Avoid story framing and philosophical filler.
+
+{example_block}
 
 ## LANGUAGE
 Write the full response in: {language}
@@ -213,14 +298,44 @@ Return a single JSON object with exactly these fields:
 
 Return ONLY the JSON object. No explanation, no prose outside the JSON.
 
+## EDUCATIONAL OBJECTIVE
+Create high-quality, timeless learning that upgrades the reader's model of reality.
+
 ## YOUR ROLE
 Write one complete page of a learning book as a rigorous conceptual argument.
 Strip popular definitions. Expose underlying mechanisms. Surface counter-intuitive consequences.
 Assert directly. Take nothing for granted. Build from one claim to the next.
 
+## THREE-PART PAGE DESIGN
+- Section 1 (position 1): Boundary — define the observed pattern and model limits.
+- Section 2 (position 2): Mechanism — explain the causal structure with concrete implications.
+- Section 3 (position 3): Transfer — provide a falsifiable application or test.
+
+## RULES AND RESEARCH
+- Conceptual change rule: expose default assumption, then replace with a stronger causal model.
+- Concrete example rule: ground abstract claims in observable cases.
+- Retrieval rule: integrate one prior-page thread to preserve conceptual continuity.
+- Transfer rule: action item must produce evidence, not opinion.
+- Precision rule: every section must distinguish observation, mechanism, and implication.
+
 Banned: "perhaps", "it could be argued", "in some ways", "arguably", "might suggest".
 Precision overrides accessibility. Sophisticated vocabulary is permitted when precise.
-You decide how to structure the argument — the standard is: is every claim earned?
+
+## UNIVERSALITY AND FAIRNESS
+- Do not infer social or cultural defaults unless the input requires them.
+- Do not rely on stereotypes or narrow institutional assumptions.
+- When no context is provided, choose examples that are broadly human and context-neutral.
+- If the user specifies a context, stay within that context without extending assumptions.
+- Do not invent personal names unless the user explicitly provides a name.
+- Do not assume specific place details unless explicitly provided.
+
+## QUALITY CHECK
+- Distinguish observation, mechanism, and implication.
+- Keep examples concrete enough to visualize.
+- Action item must be executable with minimal external dependency.
+- Avoid story framing and generic placeholder statements.
+
+{example_block}
 
 ## LANGUAGE
 Write the full response in: {language}
@@ -229,20 +344,48 @@ Write the full response in: {language}
 {neurotype_rules}"""
 
 _USER_TEMPLATE = """\
-<topic>{topic}</topic>
-<description>{description}</description>
-<page_number>{page_number}</page_number>
+<memory_context>
+{memory_context}
+</memory_context>
+
+<memory_usage_policy>
+- Reuse one core thread from prior pages to preserve continuity.
+- Add one new layer that was not already covered.
+- Avoid repeating prior examples unless you are correcting or extending them.
+- If there are no prior pages, start from first principles.
+</memory_usage_policy>
 
 <page_depth_guidance>
 {page_depth}
 </page_depth_guidance>
 
+<three_part_blueprint>
+- section 1 / position 1: Anchor the current intuition, question, or concrete scene.
+- section 2 / position 2: Explain mechanism or reframe with a specific case.
+- section 3 / position 3: Transfer to a durable takeaway that changes decisions or behavior.
+</three_part_blueprint>
+
 <neurotype>{neurotype_input_context}</neurotype>
 
-<memory_context>
-{memory_context}
-</memory_context>
-{few_shot_block}
+<topic>{topic}</topic>
+<description>{description}</description>
+<page_number>{page_number}</page_number>
+
+<universality_guardrails>
+- Do not assume identity traits, social status, family structure, profession, location, or access unless explicitly provided.
+- If the input is context-neutral, keep examples context-neutral.
+- If the input specifies context (for example school, work, family, sports, local setting), use only that context.
+- Keep people descriptions neutral and non-stereotypical.
+- Do not invent character names unless the input provides them.
+- Do not add specific place details unless the input provides them.
+</universality_guardrails>
+
+<quality_contract>
+- Write high-signal educational content, not placeholder text.
+- Make each section add new information.
+- Keep the page coherent with memory context and page depth guidance.
+</quality_contract>
+
 Generate exactly one page of the learning book for the topic above.
 Return ONLY the JSON object."""
 
@@ -383,7 +526,7 @@ class PageGeneratorAI:
         page_number = normalized["page_number"]
         age_group = normalized["age_group"]
         prepared["page_depth"] = _get_page_depth(page_number)
-        prepared["few_shot_block"] = _get_few_shot(age_group, page_number)
+        prepared["example_block"] = _get_few_shot(age_group, page_number)
 
         return prepared
 
@@ -404,17 +547,21 @@ class PageGeneratorAI:
 
     def _run_age_chain(self, prepared: dict[str, Any]) -> PageGenerationOutput:
         """Select the right prompt + LLM for the age group and invoke synchronously."""
+        if not self.age_llms:
+            raise RuntimeError("GROQ_API_KEY not configured")
         age = prepared.get("age_group", "15-20")
         prompt = self.age_prompts.get(age, self.age_prompts["15-20"])
         llm = self.age_llms.get(age, self.age_llms["15-20"])
-        return (prompt | llm.with_structured_output(PageGenerationOutput)).invoke(prepared)
+        return (prompt | llm.with_structured_output(PageGenerationOutput, method="json_mode")).invoke(prepared)
 
     async def _arun_age_chain(self, prepared: dict[str, Any]) -> PageGenerationOutput:
         """Select the right prompt + LLM for the age group and invoke asynchronously."""
+        if not self.age_llms:
+            raise RuntimeError("GROQ_API_KEY not configured")
         age = prepared.get("age_group", "15-20")
         prompt = self.age_prompts.get(age, self.age_prompts["15-20"])
         llm = self.age_llms.get(age, self.age_llms["15-20"])
-        return await (prompt | llm.with_structured_output(PageGenerationOutput)).ainvoke(prepared)
+        return await (prompt | llm.with_structured_output(PageGenerationOutput, method="json_mode")).ainvoke(prepared)
 
     def _build_chain(self):
         normalize = RunnableLambda(self._normalize_inputs)
@@ -442,10 +589,10 @@ class PageGeneratorAI:
         graph_builder.add_edge("generate", END)
         return graph_builder.compile()
 
-    def _fallback_output(self, payload: dict[str, Any]) -> PageGenerationOutput:
-        return self._error_fallback_output(payload)
+    def _fallback_output(self, payload: dict[str, Any], error_message: str = "") -> PageGenerationOutput:
+        return self._error_fallback_output(payload, error_message)
 
-    def _error_fallback_output(self, payload: dict[str, Any]) -> PageGenerationOutput:
+    def _error_fallback_output(self, payload: dict[str, Any], error_message: str = "") -> PageGenerationOutput:
         sections = [
             PageSectionDraft(
                 position=1,
@@ -463,7 +610,12 @@ class PageGeneratorAI:
                 image_prompt="student opening premium plan dialog",
             ),
         ]
-        return PageGenerationOutput(title=ERROR_FALLBACK_TEXT, sections=sections, action_item=ERROR_FALLBACK_TEXT)
+        return PageGenerationOutput(
+            title=ERROR_FALLBACK_TEXT,
+            sections=sections,
+            action_item=ERROR_FALLBACK_TEXT,
+            error_message=error_message,
+        )
 
     async def generate_page(self, payload: dict[str, Any]) -> PageGenerationOutput:
         normalized = self._normalize_inputs(payload)
@@ -471,14 +623,14 @@ class PageGeneratorAI:
             state = await self.graph.ainvoke({"payload": payload})
             result = state["result"]
             if len(result.sections) != 3:
-                result = self._fallback_output(normalized)
+                result = self._fallback_output(normalized, "Model returned invalid section count")
             self._remember_page(normalized, result)
             return result
-        except Exception:  # noqa: BLE001
+        except Exception as error:  # noqa: BLE001
             logger.exception(
                 "Page generation failed",
                 extra={"model": self.model_name, "page_number": normalized["page_number"], "age_group": normalized["age_group"]},
             )
-            result = self._error_fallback_output(normalized)
+            result = self._error_fallback_output(normalized, str(error))
             self._remember_page(normalized, result)
             return result

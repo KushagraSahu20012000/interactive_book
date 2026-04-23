@@ -105,19 +105,20 @@ class BookInitAI:
         graph_builder.add_edge("generate", END)
         return graph_builder.compile()
 
-    def _fallback_output(self, payload: dict[str, Any]) -> BookInitOutput:
+    def _fallback_output(self, payload: dict[str, Any], error_message: str = "") -> BookInitOutput:
         topic = payload["topic"]
         title = f"{topic} Quest"
         cover_prompt = (
             f"A4 portrait colorful educational kids cover about {topic}, high-contrast playful shapes, "
             "happy learners exploring concept objects, clean outlines, text-safe zone at top for title"
         )
-        return BookInitOutput(title=title, cover_prompt=cover_prompt)
+        return BookInitOutput(title=title, cover_prompt=cover_prompt, error_message=error_message)
 
-    def _error_fallback_output(self) -> BookInitOutput:
+    def _error_fallback_output(self, error_message: str = "") -> BookInitOutput:
         return BookInitOutput(
             title=ERROR_FALLBACK_TEXT,
             cover_prompt="student reading subscription required message",
+            error_message=error_message,
         )
 
     async def generate_book_init(self, payload: dict[str, Any]) -> BookInitOutput:
@@ -125,8 +126,8 @@ class BookInitAI:
             state = await self.graph.ainvoke({"payload": payload})
             result = state["result"]
             if not result.title:
-                return self._fallback_output(self._normalize_inputs(payload))
+                return self._fallback_output(self._normalize_inputs(payload), "Book init returned empty title")
             return result
-        except Exception:  # noqa: BLE001
+        except Exception as error:  # noqa: BLE001
             logger.exception("Book init generation failed", extra={"model": self.model_name})
-            return self._error_fallback_output()
+            return self._error_fallback_output(str(error))

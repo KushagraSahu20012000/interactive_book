@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const bookSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+      index: true
+    },
     topic: { type: String, required: true },
     description: { type: String, default: "" },
     ageGroup: {

@@ -13,8 +13,10 @@ class PageGenerationOutput(BaseModel):
     title: str = Field(min_length=1)
     sections: list[PageSectionDraft] = Field(min_length=3, max_length=3)
     action_item: str = Field(min_length=1)
+    error_message: str = ""
 
 
 class BookInitOutput(BaseModel):
     title: str = Field(min_length=1)
     cover_prompt: str = Field(min_length=1, description="within 6 words, no adjectives, focused on objects and actions, no style or artist references")
+    error_message: str = ""

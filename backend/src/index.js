@@ -7,7 +7,6 @@ import { connectDB } from "./db.js";
 import { createBooksRouter } from "./routes/books.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createFeedbackRouter } from "./routes/feedback.js";
-import { Book } from "./models/Book.js";
 import { SampleBook } from "./models/SampleBook.js";
 import { seedSampleBooksFromAssets } from "./services/sampleBooksSeeder.js";
 
@@ -56,17 +55,11 @@ app.use("/api/auth", createAuthRouter());
 app.use("/api/feedback", createFeedbackRouter());
 
 io.on("connection", async (socket) => {
-  const [books, sampleBooks] = await Promise.all([
-    Book.find()
-      .sort({ createdAt: -1 })
-      .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated createdAt")
-      .lean(),
-    SampleBook.find()
+  const sampleBooks = await SampleBook.find()
       .sort({ createdAt: -1 })
       .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt isSample")
-      .lean()
-  ]);
-  socket.emit("books:bootstrap", [...sampleBooks, ...books]);
+      .lean();
+  socket.emit("books:bootstrap", sampleBooks);
 });
 
 app.use((err, _req, res, _next) => {

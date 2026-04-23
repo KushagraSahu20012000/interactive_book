@@ -1,450 +1,450 @@
 {
   "5-10": {
     "1": {
-      "topic_hint": "sharing",
-      "title": "The Last Mango",
+      "topic_hint": "shared world",
+      "title": "The Borrowed World",
       "sections": [
         {
           "position": 1,
-          "text": "Arun had one mango. His sister asked for a piece. He held it tight.",
-          "image_prompt": "young boy holding mango tightly sister reaching toward it outdoor steps"
+          "text": "A child found a bright red ball in the park and shouted, 'It is mine now.' By sunset the ball was left in the grass and forgotten.",
+          "image_prompt": "child holding red ball in park at sunset"
         },
         {
           "position": 2,
-          "text": "He cut it in half. He gave her the bigger piece.",
-          "image_prompt": "boy carefully cutting mango on wooden board sunlight on hands"
+          "text": "The next day the ball was gone. An elder pointed to a tree, a river, and the soil, and said each one gives without keeping.",
+          "image_prompt": "elder showing tree river and soil to child in park"
         },
         {
           "position": 3,
-          "text": "She smiled wide. He ate his half. It tasted better than any mango before.",
-          "image_prompt": "two children sitting on steps eating mango slices both smiling"
+          "text": "The child understood: many things we use are not ours forever. We are caretakers while they pass through our hands.",
+          "image_prompt": "child gently returning park ball to shared shelf"
         }
       ],
-      "action_item": "Find something you have two of. Give one away to someone today."
+      "action_item": "Pick one thing you use today and say how you can return it better than you found it."
     },
     "2-3": {
-      "topic_hint": "sharing",
-      "title": "Too Many Pieces",
+      "topic_hint": "care leaves marks",
+      "title": "Care Leaves Marks",
       "sections": [
         {
           "position": 1,
-          "text": "Dev had ten biscuits. He gave one to every friend. Now he had none.",
-          "image_prompt": "boy with empty hands surrounded by friends eating biscuits"
+          "text": "A child threw a glass bottle into the sea and thought the act was over because no one saw it.",
+          "image_prompt": "glass bottle thrown toward shoreline water"
         },
         {
           "position": 2,
-          "text": "He sat quietly. His stomach growled. He stared at the ground.",
-          "image_prompt": "boy sitting alone on bench stomach growling others eating nearby"
+          "text": "Days later the same glass appeared near shore. A crab was trapped and a bird struggled beside sharp pieces.",
+          "image_prompt": "broken glass near shore with crab and bird at risk"
         },
         {
           "position": 3,
-          "text": "Priya gave him back two. The table was full again.",
-          "image_prompt": "girl holding two biscuits out to boy both smiling lunchtime"
+          "text": "The child learned that actions do not vanish. They leave marks in water, air, and living bodies.",
+          "image_prompt": "child collecting glass pieces with care gloves"
         }
       ],
-      "action_item": "Think of a time you shared everything and had nothing left. What happened next?"
+      "action_item": "Find one small piece of litter and remove it safely with an adult."
     },
     "4-5": {
-      "topic_hint": "sharing",
-      "title": "The Stone That Would Not Move",
+      "topic_hint": "nothing disappears",
+      "title": "Nothing Truly Goes Away",
       "sections": [
         {
           "position": 1,
-          "text": "Leena found a big smooth stone. She would not let anyone touch it.",
-          "image_prompt": "girl sitting on rock hugging it tightly friends watching from a distance"
+          "text": "A wrapper dropped on the road looked gone after rain carried it into a drain.",
+          "image_prompt": "candy wrapper moving toward street drain in rain"
         },
         {
           "position": 2,
-          "text": "One day she dropped it in the river. She grabbed for it. It sank.",
-          "image_prompt": "stone sinking into clear river girl reaching into water"
+          "text": "But it traveled from place to place, where animals met it and harm followed.",
+          "image_prompt": "plastic wrapper near grazing animal and wet ground"
         },
         {
           "position": 3,
-          "text": "Her friend dove in and pulled out a different stone. She gave it to Leena. It was better.",
-          "image_prompt": "friend emerging from river holding smooth wet stone handing it over"
+          "text": "The lesson became clear: waste often moves, not disappears. Hidden does not mean harmless.",
+          "image_prompt": "path from drain to river drawn with wrapper trail"
         }
       ],
-      "action_item": "Hold something you never share. Imagine giving it away. How does your hand feel?"
+      "action_item": "Track one item of waste from your hand to bin and name each place it passes."
     },
     "6-8": {
-      "topic_hint": "sharing",
-      "title": "The Village Well",
+      "topic_hint": "healing and shared rules",
+      "title": "Shared Space, Shared Care",
       "sections": [
         {
           "position": 1,
-          "text": "One well. Forty families. Every morning the same bucket went down.",
-          "image_prompt": "stone well in village center dawn light bucket on rope"
+          "text": "A lane full of trash looked too large for one person to change, so most walkers ignored it.",
+          "image_prompt": "trash scattered along neighborhood lane"
         },
         {
           "position": 2,
-          "text": "One farmer built his own well. He locked the gate. Water stopped rising in three months.",
-          "image_prompt": "locked iron gate on small private well cracked dry ground"
+          "text": "One person removed a little each day. Others copied the action, and the lane slowly changed.",
+          "image_prompt": "small group cleaning lane with bags and gloves"
         },
         {
           "position": 3,
-          "text": "He unlocked the gate. His well filled again. The village well filled more.",
-          "image_prompt": "open gate two wells side by side both reflecting sky"
+          "text": "When space is shared, rules are shared too. Places stay alive when care is distributed.",
+          "image_prompt": "clean shared park path with people and birds"
         }
       ],
-      "action_item": "Find something in your house that works better when more people use it."
+      "action_item": "Create one shared-space rule for your home or class and follow it for a week."
     },
     "9-10": {
-      "topic_hint": "sharing",
-      "title": "The River Remembers",
+      "topic_hint": "balance and belonging",
+      "title": "You Are Part of It",
       "sections": [
         {
           "position": 1,
-          "text": "Every river starts as rain on a mountain. It did not start as a river.",
-          "image_prompt": "mountain peak with rain falling streams beginning to form below"
+          "text": "A pond changed when frogs disappeared. At first it became quiet, then insects multiplied.",
+          "image_prompt": "quiet pond with few frogs and many insects"
         },
         {
           "position": 2,
-          "text": "Each drop joined a trickle. Each trickle joined a stream. Nothing held back.",
-          "image_prompt": "small trickle joining larger stream from above aerial view"
+          "text": "People nearby felt the change in bites, smell, and comfort. One missing part shifted the whole balance.",
+          "image_prompt": "people near pond reacting to many mosquitoes"
         },
         {
           "position": 3,
-          "text": "The river reached the sea. It came back as clouds. The mountain got more rain.",
-          "image_prompt": "river delta entering ocean clouds forming above water cycle"
+          "text": "The final insight: we are not outside nature. We are inside the same system and feel its changes directly.",
+          "image_prompt": "child touching soil and plants near balanced pond"
         }
       ],
-      "action_item": "Draw the circle: start with something you gave, end with what came back."
+      "action_item": "Name one living thing near you and one way your day depends on it."
     }
   },
   "10-15": {
     "1": {
-      "topic_hint": "study habits",
-      "title": "The Night Before",
+      "topic_hint": "evidence",
+      "title": "Claim Strength Is Not Evidence Strength",
       "sections": [
         {
           "position": 1,
-          "text": "Riya had a science test tomorrow. She had her notes but hadn't touched them in three weeks. She opened the book at 10 PM.",
-          "image_prompt": "teenager staring at textbook late at night lamp on desk nervous expression"
+          "text": "A strong claim should be separated from proof. Confidence in wording is not the same as quality of evidence.",
+          "image_prompt": "bold claim text beside blank evidence table"
         },
         {
           "position": 2,
-          "text": "She read four chapters in two hours. She underlined everything. She fell asleep with the book open.",
-          "image_prompt": "student asleep on open textbook highlighters scattered around desk"
+          "text": "Use three checks: source reliability, measurable data, and test repeatability. Missing one check lowers confidence.",
+          "image_prompt": "three-column checklist source data repeatability"
         },
         {
           "position": 3,
-          "text": "She passed. She celebrated. She opened her notes for the next test the night before that one too.",
-          "image_prompt": "student looking at passed test paper then opening calendar"
+          "text": "Decision rule: accept a claim only to the degree that verifiable evidence supports it.",
+          "image_prompt": "scale balancing claim and evidence"
         }
       ],
-      "action_item": "Open one subject notebook right now — not because anything is due. Just see what's in there."
+      "action_item": "Take one claim today and score source, data, and repeatability from 0 to 2."
     },
     "2-3": {
-      "topic_hint": "study habits",
-      "title": "The Good Notes",
+      "topic_hint": "measurement",
+      "title": "Measure Before You Conclude",
       "sections": [
         {
           "position": 1,
-          "text": "Arjun spent two hours making colour-coded notes. Different highlighters for every type of point. The page looked perfect.",
-          "image_prompt": "elaborate colour-coded notes with multiple highlighters on desk desk lamp"
+          "text": "Without measurement, improvement looks random and memory biases dominate interpretation.",
+          "image_prompt": "notebook with unmeasured notes beside timer"
         },
         {
           "position": 2,
-          "text": "Test day. He read his notes once. The colours were great. The information felt like strangers.",
-          "image_prompt": "student staring at coloured notes during test looking uncertain"
+          "text": "A simple metric with repeated trials can reveal patterns hidden inside noisy outcomes.",
+          "image_prompt": "trial log sheet with repeated numeric entries"
         },
         {
           "position": 3,
-          "text": "He answered seven out of fifteen. He looked at his notes again. They still looked great.",
-          "image_prompt": "student holding test paper with many blanks colourful notes beside it"
+          "text": "Use conclusions that match the data range, not isolated best attempts.",
+          "image_prompt": "line chart with average band and outlier points"
         }
       ],
-      "action_item": "Close your notes and write down three things you remember from your last study session — no peeking."
+      "action_item": "Define one metric for a weekly task and record it for five attempts."
     },
     "4-5": {
-      "topic_hint": "study habits",
-      "title": "The Wrong Question",
+      "topic_hint": "tradeoffs",
+      "title": "Fast vs Durable Decisions",
       "sections": [
         {
           "position": 1,
-          "text": "She studied for six hours. She knew every definition in the chapter. The test asked her to explain, not define. She stared at the blank.",
-          "image_prompt": "student staring at exam question with confused expression pencil hovering"
+          "text": "Speed can improve short-term output but increase long-term correction costs.",
+          "image_prompt": "timeline showing fast build and later repairs"
         },
         {
           "position": 2,
-          "text": "She wrote the definition anyway. Then added an example from her life. The marker gave her partial credit.",
-          "image_prompt": "student writing on exam paper crossing out and rewriting in margin"
+          "text": "Durable decisions include verification steps at points where failure is expensive.",
+          "image_prompt": "process board with verification checkpoints"
         },
         {
           "position": 3,
-          "text": "Next time she studied, she covered the page and asked herself questions out loud. She failed to answer two. She learned those two.",
-          "image_prompt": "student sitting away from desk speaking aloud notebook face-down"
+          "text": "Choose pace by total cost over time, not by first-day completion.",
+          "image_prompt": "cost-over-time graph fast vs durable approach"
         }
       ],
-      "action_item": "Pick one chapter. Ask yourself three questions about it before you read it."
+      "action_item": "Pick one task and list one step where slowing down reduces later rework."
     },
     "6-8": {
-      "topic_hint": "study habits",
-      "title": "What the Teacher Saw",
+      "topic_hint": "attention systems",
+      "title": "Switching Cost Is Real",
       "sections": [
         {
           "position": 1,
-          "text": "The teacher graded fifty tests. The ones with the highest marks had almost no highlighting. The ones with the lowest had pages full of it.",
-          "image_prompt": "teacher at desk comparing two test papers minimalist vs heavily annotated"
+          "text": "Frequent context switching reduces depth because setup cost repeats on every transition.",
+          "image_prompt": "multiple task cards with switching arrows"
         },
         {
           "position": 2,
-          "text": "She looked at the top student's notes. Three lines per page. Each line was a question.",
-          "image_prompt": "sparse notebook page with three handwritten questions circled in pencil"
+          "text": "Single-channel focus for fixed intervals reduces reset overhead and improves error rates.",
+          "image_prompt": "single task board with 20 minute timer"
         },
         {
           "position": 3,
-          "text": "She showed the class. The class thought she was joking. They kept highlighting.",
-          "image_prompt": "students looking at sparse notes on projector some looking skeptical"
+          "text": "Design attention as a system: fewer switches, clearer boundaries, higher quality output.",
+          "image_prompt": "clean workflow board with one active lane"
         }
       ],
-      "action_item": "Rewrite your notes for one topic as three questions. Then answer them without looking back."
+      "action_item": "Run one 20-minute no-switch block and note error count before and after."
     },
     "9-10": {
-      "topic_hint": "study habits",
-      "title": "What It Feels Like to Know",
+      "topic_hint": "synthesis",
+      "title": "Reliable Thinking Patterns",
       "sections": [
         {
           "position": 1,
-          "text": "You don't know that you know something until you can explain it to someone else. That test is the only one that matters.",
-          "image_prompt": "student explaining concept to friend on whiteboard friend nodding"
+          "text": "Reliable decisions combine evidence checks, measurement, and explicit tradeoff reasoning.",
+          "image_prompt": "three-part model evidence measurement tradeoff"
         },
         {
           "position": 2,
-          "text": "Vik tried explaining photosynthesis to his younger brother. He got stuck at the second step. He went back to his notes for the first time in a week.",
-          "image_prompt": "older student pausing mid-explanation to younger child holding textbook"
+          "text": "Weak decisions usually skip one of these layers and rely on confidence or habit alone.",
+          "image_prompt": "decision funnel with missing layer highlighted"
         },
         {
           "position": 3,
-          "text": "His brother asked why plants don't just eat food like animals. Vik had no answer. He wrote it down. He found out. He explained it the next day.",
-          "image_prompt": "student writing question on sticky note putting it on desk lamp"
+          "text": "The transfer principle is simple: structure first, conclusion second.",
+          "image_prompt": "workflow diagram structure then conclusion"
         }
       ],
-      "action_item": "Find someone to explain one thing you studied this week. Notice where you get stuck."
+      "action_item": "Use a three-step checklist on your next decision: evidence, measurement, tradeoff."
     }
   },
   "15-20": {
     "1": {
-      "topic_hint": "decision making",
-      "title": "You're Not Thinking — You're Justifying",
+      "topic_hint": "decision cognition",
+      "title": "Commitment Often Precedes Justification",
       "sections": [
         {
           "position": 1,
-          "text": "Most people believe they make decisions by thinking through options and picking the best one. They don't. They decide fast — in under a second — then construct reasons to justify the choice already made. The thinking comes after the decision, not before.",
-          "image_prompt": "brain diagram showing fast path and slow reasoning path highlighted separately"
+          "text": "Many choices are committed implicitly before explicit reasoning appears.",
+          "image_prompt": "timeline showing commitment before stated reasons"
         },
         {
           "position": 2,
-          "text": "Kahneman and Tversky's studies showed that when subjects were given the same choice framed differently — as a gain vs. a loss — they chose opposite options 78% of the time. Same math. Different words. Different outcome. The 'reasoning' shifted to match the emotional signal.",
-          "image_prompt": "two identical math problems on board with different word framing different answers circled"
+          "text": "Frame effects demonstrate that equivalent options can produce opposite choices under different labels.",
+          "image_prompt": "equivalent option tables with different framing labels"
         },
         {
           "position": 3,
-          "text": "The practical fix is not to think harder. It is to notice the emotion before the reasoning starts, then check whether the reasoning is working toward a conclusion or away from discomfort.",
-          "image_prompt": "person pausing at fork in road looking down at their hands not the signs"
+          "text": "A robust method logs impulse first, then separately constructs reasons and counter-reasons.",
+          "image_prompt": "decision sheet impulse reasons counterreasons"
         }
       ],
-      "action_item": "On your next decision: write down your choice first, then write three honest reasons against it."
+      "action_item": "For one decision this week, write impulse first and two counter-arguments before deciding."
     },
     "2-3": {
-      "topic_hint": "decision making",
-      "title": "The Cost You Don't List",
+      "topic_hint": "opportunity cost",
+      "title": "Every Yes Contains a Hidden No",
       "sections": [
         {
           "position": 1,
-          "text": "Every decision has an opportunity cost — the value of the best option you didn't choose. Most people list what they gain from a choice, not what they give up. That gap causes regret that seems irrational but is completely predictable.",
-          "image_prompt": "list of pros and blank side labeled costs never written in torn notebook"
+          "text": "Choice allocates scarce time and attention; the unchosen path is a real cost, not a metaphor.",
+          "image_prompt": "calendar blocks with chosen and forfeited paths"
         },
         {
           "position": 2,
-          "text": "Dan Ariely's studies on IKEA furniture show people overvalue things they built themselves by 63% on average. They wouldn't accept the same price from others that they'd ask for their own work. The sunk effort became invisible cost.",
-          "image_prompt": "person sitting next to badly assembled shelf refusing to sell it at low price"
+          "text": "Sunk-cost pressure inflates past effort and biases continuation of low-yield plans.",
+          "image_prompt": "cost graph showing rising effort and flat return"
         },
         {
           "position": 3,
-          "text": "Before committing, name the single highest-value thing this decision prevents you from doing. If you can't name it, your cost assessment is incomplete.",
-          "image_prompt": "student writing one item at top of blank page labeling it biggest trade-off"
+          "text": "Decision quality improves when forfeited alternatives are stated explicitly before commitment.",
+          "image_prompt": "decision card with gain and forfeited option fields"
         }
       ],
-      "action_item": "Think of a choice you're avoiding. Write down what you would have to give up to make it."
+      "action_item": "Write one current choice with two lines: value gained and value forfeited."
     },
     "4-5": {
-      "topic_hint": "decision making",
-      "title": "The Assumption Driving the Choice",
+      "topic_hint": "premise quality",
+      "title": "Wrong Premise, Correct Logic, Bad Outcome",
       "sections": [
         {
           "position": 1,
-          "text": "Most bad decisions are not failures of reasoning. They are failures of the starting assumption. The logic was correct — the premise was wrong. Finding the premise is harder than checking the logic.",
-          "image_prompt": "equation on whiteboard correct steps wrong starting variable circled in red"
+          "text": "Reasoning quality is bounded by premise quality; invalid premises propagate error through valid logic.",
+          "image_prompt": "logic chain starting from incorrect premise"
         },
         {
           "position": 2,
-          "text": "Jeff Bezos' 'regret minimization framework' is not about optimism. It is about identifying which assumption about the future will drive regret. He assumed that failing at a startup would be less regrettable than not trying. That assumption, not the decision, was the real work.",
-          "image_prompt": "older person at desk looking forward from rocking chair projection of two paths ahead"
+          "text": "Optimization without premise testing often accelerates movement in the wrong direction.",
+          "image_prompt": "fast arrow moving toward marked dead end"
         },
         {
           "position": 3,
-          "text": "Write the assumption before the decision. If the assumption is wrong, every step built on it falls too.",
-          "image_prompt": "person writing sentence at top of decision tree before any branches"
+          "text": "Premise audits should precede strategy selection in high-impact decisions.",
+          "image_prompt": "pre-decision checklist with premise audit first"
         }
       ],
-      "action_item": "Take a decision you're stuck on. Write: 'I am assuming that...' and complete it honestly."
+      "action_item": "Write one key assumption for a current plan and list one way to falsify it."
     },
     "6-8": {
-      "topic_hint": "decision making",
-      "title": "The Same Pattern in Surgery",
+      "topic_hint": "process reliability",
+      "title": "Process Protects Performance Under Load",
       "sections": [
         {
           "position": 1,
-          "text": "Surgeons face the same cognitive bias structure as teenagers choosing electives. The brain under cognitive load defaults to what is most familiar, not what is most effective. This has been measured and reproduced.",
-          "image_prompt": "surgeon in operating room checking familiar instrument vs new one on tray"
+          "text": "Under pressure, humans default to familiar routines, not necessarily optimal ones.",
+          "image_prompt": "high-load dashboard with default routine highlighted"
         },
         {
           "position": 2,
-          "text": "Atul Gawande's research in 'Complications' showed that surgical teams who used decision checklists — forcing them to name assumptions before operating — cut preventable errors by 47% across six hospitals. The checklist did not improve skill. It slowed the default assumption.",
-          "image_prompt": "surgical checklist on clipboard being reviewed before procedure hospital light"
+          "text": "Short procedural gates reduce preventable error by forcing a pause before irreversible action.",
+          "image_prompt": "three-step gate before execute button"
         },
         {
           "position": 3,
-          "text": "The pattern: pre-commitment to a process beats in-the-moment judgment when the stakes are high and cognitive load is real. Your brain under pressure is not your brain at rest.",
-          "image_prompt": "two brain scans labeled rested and under pressure different activation patterns"
+          "text": "Reliability emerges from pre-commitment to process when cognitive load is low.",
+          "image_prompt": "plan board prepared before high-pressure phase"
         }
       ],
-      "action_item": "Before your next important decision, write a three-step checklist and follow it in order."
+      "action_item": "Create a three-step pre-action gate for one recurring high-stakes task."
     },
     "9-10": {
-      "topic_hint": "decision making",
-      "title": "The Decision You Already Made",
+      "topic_hint": "synthesis",
+      "title": "From Pattern Recognition to Better Choice",
       "sections": [
         {
           "position": 1,
-          "text": "The hardest decisions are not the ones where you don't know what to do. They are the ones where you already know, and you're looking for permission or for someone to argue you out of it.",
-          "image_prompt": "person staring at filled-in form that hasn't been submitted yet"
+          "text": "Common failure chain: implicit commitment, post-hoc justification, hidden opportunity cost, untested premise.",
+          "image_prompt": "failure chain diagram with four linked nodes"
         },
         {
           "position": 2,
-          "text": "Across everything explored: the bias comes before the logic, the cost gets ignored, the assumption goes unchecked, and the pressure defeats the reasoning. The common thread is that the decision is rarely the hard part — seeing clearly is.",
-          "image_prompt": "single candle flame illuminating a room showing things previously in shadow"
+          "text": "Interruption points can be designed at each node to improve decision fidelity.",
+          "image_prompt": "chain diagram with intervention markers"
         },
         {
           "position": 3,
-          "text": "There is no decision-making system that removes the moment where you have to commit. All systems do is make that moment visible and honest. The rest is still yours.",
-          "image_prompt": "person standing at an open door light ahead foot raised to step"
+          "text": "Frameworks do not remove responsibility; they make responsibility explicit and auditable.",
+          "image_prompt": "audit sheet beside final decision record"
         }
       ],
-      "action_item": "Name one decision you've been postponing. Write a date — not now, a real date — when you will make it."
+      "action_item": "Map one repeated decision error and define one interruption point for next time."
     }
   },
   "20+": {
     "1": {
-      "topic_hint": "systems thinking",
-      "title": "The Loop Is the Unit",
+      "topic_hint": "feedback dynamics",
+      "title": "Feedback Loops Govern System Behavior",
       "sections": [
         {
           "position": 1,
-          "text": "Systems thinking is not about seeing more things. It is about recognizing that causal relationships run in loops, not lines. The popular model — A causes B, B causes C — fails because it assumes all causation is unidirectional. Real systems close back on themselves.",
-          "image_prompt": "linear chain of arrows on left side closed loop diagram on right side"
+          "text": "Most real systems are loop-dominant: outputs become future inputs.",
+          "image_prompt": "closed-loop system diagram with output-to-input return"
         },
         {
           "position": 2,
-          "text": "A classic case: a thermostat detects temperature below threshold, activates heat, temperature rises, thermostat deactivates heat. The thermostat's action is caused by the very thing it produces. This is not a malfunction — it is a feedback loop, and it is the basic unit of stability in any system.",
-          "image_prompt": "thermostat wiring diagram showing temperature sensor and heater in closed circuit"
+          "text": "Loop behavior depends on delay, gain, and measurement quality, not only initial conditions.",
+          "image_prompt": "control response plot showing delay and gain effects"
         },
         {
           "position": 3,
-          "text": "The counter-intuitive consequence: interventions that appear to fix a system by cutting the loop — imposing a direct override — typically produce instability. The stability was the loop. Removing it removes the regulation.",
-          "image_prompt": "thermostat override switch system temperature graph spiking erratically"
+          "text": "Linear intervention logic fails when loop structure is ignored.",
+          "image_prompt": "linear intervention crossing unresolved feedback loop"
         }
       ],
-      "action_item": "Draw a loop — any loop in your daily life where an output feeds back into an input."
+      "action_item": "Model one loop you influence and identify one measurable delay parameter."
     },
     "2-3": {
-      "topic_hint": "systems thinking",
-      "title": "Reinforcement Goes Both Ways",
+      "topic_hint": "reinforcement",
+      "title": "Compounding Is Direction-Agnostic",
       "sections": [
         {
           "position": 1,
-          "text": "Balancing feedback loops produce stability. Reinforcing loops produce exponential change — in both directions. Most people recognize compounding growth. Almost none recognize that the identical structure drives collapse. The math is symmetric; the consequences are not.",
-          "image_prompt": "two graphs one exponential growth one exponential collapse same curve shape mirrored"
+          "text": "Reinforcing loops amplify trajectories in both positive and negative directions.",
+          "image_prompt": "paired compounding curves diverging upward and downward"
         },
         {
           "position": 2,
-          "text": "Bank runs are a reinforcing loop: fear of bank failure causes withdrawal, withdrawal depletes reserves, depletion confirms the fear. The 1930s US banking collapses were not primarily caused by bad loans — they were caused by a self-referential loop that FDIC insurance eventually severed by removing the confirmation signal.",
-          "image_prompt": "depression-era bank queue on street newspaper headlines visible in crowd"
+          "text": "Signal sign and recurrence frequency dominate trajectory more than initial magnitude.",
+          "image_prompt": "signal frequency and sign controls on system plot"
         },
         {
           "position": 3,
-          "text": "The first-order consequence most analysts miss: in reinforcing loops, the speed of the signal matters more than the size of the initial trigger. Slow signals produce manageable change. Fast signals produce phase transitions.",
-          "image_prompt": "speedometer with two identical amounts of force one applied slowly one instantly"
+          "text": "Intervention leverage is highest at feedback channel design, not at endpoint correction.",
+          "image_prompt": "system map highlighting upstream feedback channel"
         }
       ],
-      "action_item": "Identify one reinforcing loop in your professional domain. Map what signal breaks or starts it."
+      "action_item": "Identify one reinforcing loop and specify where to alter recurrence frequency."
     },
     "4-5": {
-      "topic_hint": "systems thinking",
-      "title": "The Leverage Point Paradox",
+      "topic_hint": "leverage",
+      "title": "Parameter Changes vs Paradigm Changes",
       "sections": [
         {
           "position": 1,
-          "text": "Donella Meadows identified twelve places to intervene in a system, ordered by leverage. The popular assumption is that changing numbers — tax rates, speeds, budgets — is the most accessible and effective intervention. It is ranked eleventh out of twelve. It is almost always the least effective option with real-world constraints.",
-          "image_prompt": "numbered list of leverage points on whiteboard numbers circled in order of power"
+          "text": "Parameter edits shift outputs temporarily while preserving governing objective.",
+          "image_prompt": "parameter knobs adjusting output with same objective"
         },
         {
           "position": 2,
-          "text": "The highest leverage point is the paradigm — the shared set of assumptions about what the system is for and who it serves. Changing a tax rate does not change who sets tax rates or why. Changing the goal structure of an institution does. The 1996 Welfare Reform Act changed numbers. The Civil Rights Act changed paradigms.",
-          "image_prompt": "two documents side by side one with changed figures one with changed founding mandate"
+          "text": "Paradigm edits change objective function and reconfigure downstream behavior.",
+          "image_prompt": "objective function replaced in system model"
         },
         {
           "position": 3,
-          "text": "The second-order consequence: high-leverage interventions are almost always invisible to the people inside the system, because the system's paradigm is precisely the frame through which its members perceive what is real and what is possible.",
-          "image_prompt": "person inside large machine looking at gears unable to see the frame holding them"
+          "text": "Persistent failure often indicates objective mismatch, not insufficient parameter tuning.",
+          "image_prompt": "repeated tuning attempts with unchanged failure pattern"
         }
       ],
-      "action_item": "Name one 'solution' in your domain that has been tried repeatedly without lasting effect. Identify which leverage point it was using."
+      "action_item": "For one failing system, state whether your intervention changes parameters or objective."
     },
     "6-8": {
-      "topic_hint": "systems thinking",
-      "title": "Emergence Cannot Be Deduced",
+      "topic_hint": "emergence",
+      "title": "System-Level Properties Require System-Level Models",
       "sections": [
         {
           "position": 1,
-          "text": "Emergence — properties that exist at the system level but not in any individual component — is the central concept that distinguishes systems thinking from reductionist analysis. You cannot predict traffic from studying one car. You cannot predict consciousness from studying one neuron. The properties are real but non-deducible from parts.",
-          "image_prompt": "single ant then ant colony trail showing property present only in aggregate"
+          "text": "Emergent properties appear at aggregate scales and are absent in isolated components.",
+          "image_prompt": "component view contrasted with system-level pattern"
         },
         {
           "position": 2,
-          "text": "Philip Anderson's 1972 paper 'More is Different' is the clearest formal statement: at each level of organization, qualitatively new laws apply. Solid-state physics cannot be derived from particle physics even in principle. This is not a gap in knowledge — it is structural. The physics of one level does not contain the physics of the next.",
-          "image_prompt": "stacked boxes labeled particles atoms molecules cells organisms with arrows showing irreducibility"
+          "text": "Cross-scale transitions introduce constraints not inferable from part-level inspection alone.",
+          "image_prompt": "multi-scale model with distinct constraint layers"
         },
         {
           "position": 3,
-          "text": "The implication for analysis: any methodology that only examines components will be structurally incapable of explaining system-level behavior. This is not a critique of reductionism — it is a statement about its scope. Reductionism is necessary but insufficient.",
-          "image_prompt": "microscope next to wide-angle lens on table both useful different scales"
+          "text": "Reductionist detail remains necessary but insufficient for complete causal explanation.",
+          "image_prompt": "component analysis and system simulation side by side"
         }
       ],
-      "action_item": "Name one system in your domain. List three properties that exist only at system level, not in any part."
+      "action_item": "List three properties in your domain that exist only at system scale."
     },
     "9-10": {
-      "topic_hint": "systems thinking",
-      "title": "The System You Are Inside",
+      "topic_hint": "observer position",
+      "title": "Modeling Includes the Modeler",
       "sections": [
         {
           "position": 1,
-          "text": "The deepest difficulty with systems thinking is not intellectual — it is positional. Every analyst is inside a system. Their tools, language, incentives, and attention are products of the system they are studying. There is no view from outside. There is only the view from where you stand.",
-          "image_prompt": "person drawing map of room they are standing inside perspective distortion visible"
+          "text": "Observers model systems from within institutional, linguistic, and incentive constraints.",
+          "image_prompt": "analyst position marked inside system boundary diagram"
         },
         {
           "position": 2,
-          "text": "Gregory Bateson called this the 'double bind at the level of epistemology.' The framework you use to study a system is itself a product of a higher-order system. Changing the framework requires a perspective not available within it. Every paradigm shift in science required someone working from outside the ruling framework — often treated as wrong until the shift was complete.",
-          "image_prompt": "two frames one inside the other person trying to lift the outer frame from inside"
+          "text": "Analytic tools encode assumptions that can suppress alternative hypotheses.",
+          "image_prompt": "two toolsets producing different hypothesis spaces"
         },
         {
           "position": 3,
-          "text": "This is not a counsel of despair. It is a specification of difficulty. You can study a system more honestly by mapping your own position in it, naming the incentives that shape your perception, and holding your models lightly. The loop always comes back around. The question is whether you see it when it does.",
-          "image_prompt": "compass held by hand shadow of holder visible in the frame cardinal directions all around"
+          "text": "High-integrity modeling declares observer constraints as explicit variables.",
+          "image_prompt": "model template with observer constraint variables"
         }
       ],
-      "action_item": "Write one assumption you hold about your field that you have never seriously questioned. Then question it for ten minutes."
+      "action_item": "Add an observer-constraint section to your next model specification."
     }
   }
 }

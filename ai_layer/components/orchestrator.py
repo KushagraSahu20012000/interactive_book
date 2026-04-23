@@ -282,6 +282,7 @@ class Orchestrator:
                         continue
                     job.title = page_result.title
                     job.action_item = page_result.action_item
+                    job.error = page_result.error_message or ""
                     job.pending_images = 3
                     for idx, section in enumerate(page_result.sections):
                         job.sections[idx]["text"] = section.text
@@ -332,6 +333,7 @@ class Orchestrator:
                     if not job:
                         continue
                     job.book_title = init_result.title
+                    job.error = getattr(init_result, "error_message", "") or job.error
                     job.cover["prompt"] = init_result.cover_prompt
                     job.cover["status"] = "queued"
                     self._touch(job)

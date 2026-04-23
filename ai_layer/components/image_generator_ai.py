@@ -55,13 +55,8 @@ class ImageGeneratorAI:
                     "height": 0,
                     "image_url": image_url,
                 }
-            return {
-                "pixel_array": [],
-                "width": 0,
-                "height": 0,
-                "notice": "(No image found)",
-                "image_url": "",
-            }
+            image = await asyncio.to_thread(self._generate_image, prompt, width, height)
+            return await asyncio.to_thread(self._low_rank_pixel_array, image, size, rank)
 
         image = await asyncio.to_thread(self._generate_image, prompt, width, height)
         return await asyncio.to_thread(self._low_rank_pixel_array, image, size, rank)
