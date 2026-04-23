@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
+ENV HOST=0.0.0.0
+ENV PORT=7860
+
+EXPOSE 7860
 
 CMD ["bash", "start_ai_layer.sh"]
