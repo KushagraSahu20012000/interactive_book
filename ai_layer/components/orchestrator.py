@@ -13,6 +13,20 @@ from pydantic import BaseModel
 
 from .agent_tools import build_future_agent
 from .book_init_ai import BookInitAI
+from .config import (
+    DEFAULT_AGE_GROUP,
+    DEFAULT_LANGUAGE,
+    DEFAULT_NEUROTYPE,
+    TTS_DEFAULT_LANGUAGE,
+    TTS_ENGLISH_MODEL,
+    TTS_ENGLISH_VOICE,
+    TTS_HINDI_MODEL,
+    TTS_HINDI_VOICE,
+    TTS_MAX_TEXT_LENGTH,
+    VALID_AGE_GROUPS,
+    VALID_LANGUAGES,
+    VALID_NEUROTYPES,
+)
 from .image_generator_ai import ImageGeneratorAI
 from .page_generator_ai import PageGeneratorAI
 
@@ -88,9 +102,9 @@ class ImageTask:
 class CreateBookRequest(BaseModel):
     topic: str
     description: str = ""
-    age_group: str = "15-20"
-    neurotype: str = "None"
-    language: str = "English"
+    age_group: str = DEFAULT_AGE_GROUP
+    neurotype: str = DEFAULT_NEUROTYPE
+    language: str = DEFAULT_LANGUAGE
     memory_key: Optional[str] = None
     page_number: int = 1
 
@@ -98,20 +112,21 @@ class CreateBookRequest(BaseModel):
 class NextPageRequest(BaseModel):
     topic: str
     description: str = ""
-    age_group: str = "15-20"
-    neurotype: str = "None"
-    language: str = "English"
+    age_group: str = DEFAULT_AGE_GROUP
+    neurotype: str = DEFAULT_NEUROTYPE
+    language: str = DEFAULT_LANGUAGE
     memory_key: Optional[str] = None
     page_number: int
 
 
 class TTSRequest(BaseModel):
     text: str
-    voice: str = "autumn"
+    language: str = TTS_DEFAULT_LANGUAGE
+    voice: Optional[str] = None
     model: Optional[str] = None
 
 
-def _synthesize_speech(text: str, voice: str, model: Optional[str] = None) -> bytes:
+def _synthesize_speech(text: str, language: str = TTS_DEFAULT_LANGUAGE, voice: Optional[str] = None, model: Optional[str] = None) -> bytes:
     api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key:
         raise HTTPException(status_code=503, detail="GROQ_API_KEY not configured")
@@ -123,10 +138,14 @@ def _synthesize_speech(text: str, voice: str, model: Optional[str] = None) -> by
 
     client = Groq(api_key=api_key)
     try:
-        model_name = model or os.getenv("GROQ_TTS_MODEL", "canopylabs/orpheus-v1-english")
+        normalized_language = language if language in VALID_LANGUAGES else DEFAULT_LANGUAGE
+        default_voice = TTS_HINDI_VOICE if normalized_language == "Hindi" else TTS_ENGLISH_VOICE
+        default_model = TTS_HINDI_MODEL if normalized_language == "Hindi" else TTS_ENGLISH_MODEL
+        model_name = model or default_model
+        voice_name = voice or default_voice
         response = client.audio.speech.create(
             model=model_name,
-            voice=voice,
+            voice=voice_name,
             input=text,
             response_format="wav",
         )
@@ -157,18 +176,15 @@ class Orchestrator:
 
     @staticmethod
     def _normalize_age_group(value: str) -> str:
-        valid = {"5-10", "10-15", "15-20", "20+"}
-        return value if value in valid else "15-20"
+        return value if value in VALID_AGE_GROUPS else DEFAULT_AGE_GROUP
 
     @staticmethod
     def _normalize_neurotype(value: str) -> str:
-        valid = {"ADHD", "Dyslexia", "Autism", "None"}
-        return value if value in valid else "None"
+        return value if value in VALID_NEUROTYPES else DEFAULT_NEUROTYPE
 
     @staticmethod
     def _normalize_language(value: str) -> str:
-        valid = {"English", "Hindi"}
-        return value if value in valid else "English"
+        return value if value in VALID_LANGUAGES else DEFAULT_LANGUAGE
 
     async def enqueue_create_book(self, payload: CreateBookRequest) -> dict[str, str]:
         job_id = str(uuid.uuid4())
@@ -409,6 +425,15 @@ def create_app() -> FastAPI:
     async def startup() -> None:
         await orchestrator.start_workers()
 
+    @app.get("/")
+    async def root() -> dict[str, Any]:
+        return {
+            "service": "bright-minds-ai",
+            "status": "ok",
+            "health": "/health",
+            "docs": "/docs",
+        }
+
     @app.get("/health")
     async def health() -> dict[str, Any]:
         return {
@@ -434,9 +459,9 @@ def create_app() -> FastAPI:
         text = (payload.text or "").strip()
         if not text:
             raise HTTPException(status_code=400, detail="text is required")
-        if len(text) > 4000:
-            text = text[:4000]
-        audio_bytes = await asyncio.to_thread(_synthesize_speech, text, payload.voice, payload.model)
+        if len(text) > TTS_MAX_TEXT_LENGTH:
+            text = text[:TTS_MAX_TEXT_LENGTH]
+        audio_bytes = await asyncio.to_thread(_synthesize_speech, text, payload.language, payload.voice, payload.model)
         return Response(content=audio_bytes, media_type="audio/wav")
 
     return app

@@ -8,10 +8,20 @@ from langchain_core.runnables import RunnableLambda
 from langgraph.graph import END, START, StateGraph
 from langchain_groq import ChatGroq
 
+from .config import (
+    DEFAULT_AGE_GROUP,
+    DEFAULT_GROQ_MODEL,
+    DEFAULT_LANGUAGE,
+    DEFAULT_NEUROTYPE,
+    HINDI_STYLE_INSTRUCTION,
+    VALID_AGE_GROUPS,
+    VALID_LANGUAGES,
+    VALID_NEUROTYPES,
+)
 from .schemas import BookInitOutput
 
 
-ERROR_FALLBACK_TEXT = "Free Tier Limit Reached. Buy Subscription to have a full experience"
+ERROR_FALLBACK_TEXT = "Free Tier Expired. Request Upgrade!"
 
 
 BOOK_INIT_PROMPT = """
@@ -45,7 +55,7 @@ class BookInitState(TypedDict, total=False):
 
 class BookInitAI:
     def __init__(self) -> None:
-        self.model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+        self.model_name = DEFAULT_GROQ_MODEL
         self.groq_api_key = os.getenv("GROQ_API_KEY", "")
         self.prompt = ChatPromptTemplate.from_template(BOOK_INIT_PROMPT)
 
@@ -54,20 +64,17 @@ class BookInitAI:
         self.graph = self._build_graph()
 
     def _normalize_inputs(self, payload: dict[str, Any]) -> dict[str, Any]:
-        age_group = payload.get("age_group", "15-20")
-        neurotype = payload.get("neurotype", "None")
-        language = payload.get("language", "English")
-        valid_age = {"5-10", "10-15", "15-20", "20+"}
-        valid_neuro = {"ADHD", "Dyslexia", "Autism", "None"}
-        valid_language = {"English", "Hindi"}
-        normalized_language = language if language in valid_language else "English"
+        age_group = payload.get("age_group", DEFAULT_AGE_GROUP)
+        neurotype = payload.get("neurotype", DEFAULT_NEUROTYPE)
+        language = payload.get("language", DEFAULT_LANGUAGE)
+        normalized_language = language if language in VALID_LANGUAGES else DEFAULT_LANGUAGE
         return {
             "topic": payload.get("topic", "General Learning"),
             "description": payload.get("description", "") or "",
-            "age_group": age_group if age_group in valid_age else "15-20",
-            "neurotype": neurotype if neurotype in valid_neuro else "None",
+            "age_group": age_group if age_group in VALID_AGE_GROUPS else DEFAULT_AGE_GROUP,
+            "neurotype": neurotype if neurotype in VALID_NEUROTYPES else DEFAULT_NEUROTYPE,
             "language": normalized_language,
-            "language_style_instruction": "Native everyday speaking hindi" if normalized_language == "Hindi" else "",
+            "language_style_instruction": HINDI_STYLE_INSTRUCTION if normalized_language == "Hindi" else "",
         }
 
     def _build_chain(self):

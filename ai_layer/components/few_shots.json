@@ -1,0 +1,450 @@
+{
+  "5-10": {
+    "1": {
+      "topic_hint": "sharing",
+      "title": "The Last Mango",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Arun had one mango. His sister asked for a piece. He held it tight.",
+          "image_prompt": "young boy holding mango tightly sister reaching toward it outdoor steps"
+        },
+        {
+          "position": 2,
+          "text": "He cut it in half. He gave her the bigger piece.",
+          "image_prompt": "boy carefully cutting mango on wooden board sunlight on hands"
+        },
+        {
+          "position": 3,
+          "text": "She smiled wide. He ate his half. It tasted better than any mango before.",
+          "image_prompt": "two children sitting on steps eating mango slices both smiling"
+        }
+      ],
+      "action_item": "Find something you have two of. Give one away to someone today."
+    },
+    "2-3": {
+      "topic_hint": "sharing",
+      "title": "Too Many Pieces",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Dev had ten biscuits. He gave one to every friend. Now he had none.",
+          "image_prompt": "boy with empty hands surrounded by friends eating biscuits"
+        },
+        {
+          "position": 2,
+          "text": "He sat quietly. His stomach growled. He stared at the ground.",
+          "image_prompt": "boy sitting alone on bench stomach growling others eating nearby"
+        },
+        {
+          "position": 3,
+          "text": "Priya gave him back two. The table was full again.",
+          "image_prompt": "girl holding two biscuits out to boy both smiling lunchtime"
+        }
+      ],
+      "action_item": "Think of a time you shared everything and had nothing left. What happened next?"
+    },
+    "4-5": {
+      "topic_hint": "sharing",
+      "title": "The Stone That Would Not Move",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Leena found a big smooth stone. She would not let anyone touch it.",
+          "image_prompt": "girl sitting on rock hugging it tightly friends watching from a distance"
+        },
+        {
+          "position": 2,
+          "text": "One day she dropped it in the river. She grabbed for it. It sank.",
+          "image_prompt": "stone sinking into clear river girl reaching into water"
+        },
+        {
+          "position": 3,
+          "text": "Her friend dove in and pulled out a different stone. She gave it to Leena. It was better.",
+          "image_prompt": "friend emerging from river holding smooth wet stone handing it over"
+        }
+      ],
+      "action_item": "Hold something you never share. Imagine giving it away. How does your hand feel?"
+    },
+    "6-8": {
+      "topic_hint": "sharing",
+      "title": "The Village Well",
+      "sections": [
+        {
+          "position": 1,
+          "text": "One well. Forty families. Every morning the same bucket went down.",
+          "image_prompt": "stone well in village center dawn light bucket on rope"
+        },
+        {
+          "position": 2,
+          "text": "One farmer built his own well. He locked the gate. Water stopped rising in three months.",
+          "image_prompt": "locked iron gate on small private well cracked dry ground"
+        },
+        {
+          "position": 3,
+          "text": "He unlocked the gate. His well filled again. The village well filled more.",
+          "image_prompt": "open gate two wells side by side both reflecting sky"
+        }
+      ],
+      "action_item": "Find something in your house that works better when more people use it."
+    },
+    "9-10": {
+      "topic_hint": "sharing",
+      "title": "The River Remembers",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Every river starts as rain on a mountain. It did not start as a river.",
+          "image_prompt": "mountain peak with rain falling streams beginning to form below"
+        },
+        {
+          "position": 2,
+          "text": "Each drop joined a trickle. Each trickle joined a stream. Nothing held back.",
+          "image_prompt": "small trickle joining larger stream from above aerial view"
+        },
+        {
+          "position": 3,
+          "text": "The river reached the sea. It came back as clouds. The mountain got more rain.",
+          "image_prompt": "river delta entering ocean clouds forming above water cycle"
+        }
+      ],
+      "action_item": "Draw the circle: start with something you gave, end with what came back."
+    }
+  },
+  "10-15": {
+    "1": {
+      "topic_hint": "study habits",
+      "title": "The Night Before",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Riya had a science test tomorrow. She had her notes but hadn't touched them in three weeks. She opened the book at 10 PM.",
+          "image_prompt": "teenager staring at textbook late at night lamp on desk nervous expression"
+        },
+        {
+          "position": 2,
+          "text": "She read four chapters in two hours. She underlined everything. She fell asleep with the book open.",
+          "image_prompt": "student asleep on open textbook highlighters scattered around desk"
+        },
+        {
+          "position": 3,
+          "text": "She passed. She celebrated. She opened her notes for the next test the night before that one too.",
+          "image_prompt": "student looking at passed test paper then opening calendar"
+        }
+      ],
+      "action_item": "Open one subject notebook right now — not because anything is due. Just see what's in there."
+    },
+    "2-3": {
+      "topic_hint": "study habits",
+      "title": "The Good Notes",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Arjun spent two hours making colour-coded notes. Different highlighters for every type of point. The page looked perfect.",
+          "image_prompt": "elaborate colour-coded notes with multiple highlighters on desk desk lamp"
+        },
+        {
+          "position": 2,
+          "text": "Test day. He read his notes once. The colours were great. The information felt like strangers.",
+          "image_prompt": "student staring at coloured notes during test looking uncertain"
+        },
+        {
+          "position": 3,
+          "text": "He answered seven out of fifteen. He looked at his notes again. They still looked great.",
+          "image_prompt": "student holding test paper with many blanks colourful notes beside it"
+        }
+      ],
+      "action_item": "Close your notes and write down three things you remember from your last study session — no peeking."
+    },
+    "4-5": {
+      "topic_hint": "study habits",
+      "title": "The Wrong Question",
+      "sections": [
+        {
+          "position": 1,
+          "text": "She studied for six hours. She knew every definition in the chapter. The test asked her to explain, not define. She stared at the blank.",
+          "image_prompt": "student staring at exam question with confused expression pencil hovering"
+        },
+        {
+          "position": 2,
+          "text": "She wrote the definition anyway. Then added an example from her life. The marker gave her partial credit.",
+          "image_prompt": "student writing on exam paper crossing out and rewriting in margin"
+        },
+        {
+          "position": 3,
+          "text": "Next time she studied, she covered the page and asked herself questions out loud. She failed to answer two. She learned those two.",
+          "image_prompt": "student sitting away from desk speaking aloud notebook face-down"
+        }
+      ],
+      "action_item": "Pick one chapter. Ask yourself three questions about it before you read it."
+    },
+    "6-8": {
+      "topic_hint": "study habits",
+      "title": "What the Teacher Saw",
+      "sections": [
+        {
+          "position": 1,
+          "text": "The teacher graded fifty tests. The ones with the highest marks had almost no highlighting. The ones with the lowest had pages full of it.",
+          "image_prompt": "teacher at desk comparing two test papers minimalist vs heavily annotated"
+        },
+        {
+          "position": 2,
+          "text": "She looked at the top student's notes. Three lines per page. Each line was a question.",
+          "image_prompt": "sparse notebook page with three handwritten questions circled in pencil"
+        },
+        {
+          "position": 3,
+          "text": "She showed the class. The class thought she was joking. They kept highlighting.",
+          "image_prompt": "students looking at sparse notes on projector some looking skeptical"
+        }
+      ],
+      "action_item": "Rewrite your notes for one topic as three questions. Then answer them without looking back."
+    },
+    "9-10": {
+      "topic_hint": "study habits",
+      "title": "What It Feels Like to Know",
+      "sections": [
+        {
+          "position": 1,
+          "text": "You don't know that you know something until you can explain it to someone else. That test is the only one that matters.",
+          "image_prompt": "student explaining concept to friend on whiteboard friend nodding"
+        },
+        {
+          "position": 2,
+          "text": "Vik tried explaining photosynthesis to his younger brother. He got stuck at the second step. He went back to his notes for the first time in a week.",
+          "image_prompt": "older student pausing mid-explanation to younger child holding textbook"
+        },
+        {
+          "position": 3,
+          "text": "His brother asked why plants don't just eat food like animals. Vik had no answer. He wrote it down. He found out. He explained it the next day.",
+          "image_prompt": "student writing question on sticky note putting it on desk lamp"
+        }
+      ],
+      "action_item": "Find someone to explain one thing you studied this week. Notice where you get stuck."
+    }
+  },
+  "15-20": {
+    "1": {
+      "topic_hint": "decision making",
+      "title": "You're Not Thinking — You're Justifying",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Most people believe they make decisions by thinking through options and picking the best one. They don't. They decide fast — in under a second — then construct reasons to justify the choice already made. The thinking comes after the decision, not before.",
+          "image_prompt": "brain diagram showing fast path and slow reasoning path highlighted separately"
+        },
+        {
+          "position": 2,
+          "text": "Kahneman and Tversky's studies showed that when subjects were given the same choice framed differently — as a gain vs. a loss — they chose opposite options 78% of the time. Same math. Different words. Different outcome. The 'reasoning' shifted to match the emotional signal.",
+          "image_prompt": "two identical math problems on board with different word framing different answers circled"
+        },
+        {
+          "position": 3,
+          "text": "The practical fix is not to think harder. It is to notice the emotion before the reasoning starts, then check whether the reasoning is working toward a conclusion or away from discomfort.",
+          "image_prompt": "person pausing at fork in road looking down at their hands not the signs"
+        }
+      ],
+      "action_item": "On your next decision: write down your choice first, then write three honest reasons against it."
+    },
+    "2-3": {
+      "topic_hint": "decision making",
+      "title": "The Cost You Don't List",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Every decision has an opportunity cost — the value of the best option you didn't choose. Most people list what they gain from a choice, not what they give up. That gap causes regret that seems irrational but is completely predictable.",
+          "image_prompt": "list of pros and blank side labeled costs never written in torn notebook"
+        },
+        {
+          "position": 2,
+          "text": "Dan Ariely's studies on IKEA furniture show people overvalue things they built themselves by 63% on average. They wouldn't accept the same price from others that they'd ask for their own work. The sunk effort became invisible cost.",
+          "image_prompt": "person sitting next to badly assembled shelf refusing to sell it at low price"
+        },
+        {
+          "position": 3,
+          "text": "Before committing, name the single highest-value thing this decision prevents you from doing. If you can't name it, your cost assessment is incomplete.",
+          "image_prompt": "student writing one item at top of blank page labeling it biggest trade-off"
+        }
+      ],
+      "action_item": "Think of a choice you're avoiding. Write down what you would have to give up to make it."
+    },
+    "4-5": {
+      "topic_hint": "decision making",
+      "title": "The Assumption Driving the Choice",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Most bad decisions are not failures of reasoning. They are failures of the starting assumption. The logic was correct — the premise was wrong. Finding the premise is harder than checking the logic.",
+          "image_prompt": "equation on whiteboard correct steps wrong starting variable circled in red"
+        },
+        {
+          "position": 2,
+          "text": "Jeff Bezos' 'regret minimization framework' is not about optimism. It is about identifying which assumption about the future will drive regret. He assumed that failing at a startup would be less regrettable than not trying. That assumption, not the decision, was the real work.",
+          "image_prompt": "older person at desk looking forward from rocking chair projection of two paths ahead"
+        },
+        {
+          "position": 3,
+          "text": "Write the assumption before the decision. If the assumption is wrong, every step built on it falls too.",
+          "image_prompt": "person writing sentence at top of decision tree before any branches"
+        }
+      ],
+      "action_item": "Take a decision you're stuck on. Write: 'I am assuming that...' and complete it honestly."
+    },
+    "6-8": {
+      "topic_hint": "decision making",
+      "title": "The Same Pattern in Surgery",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Surgeons face the same cognitive bias structure as teenagers choosing electives. The brain under cognitive load defaults to what is most familiar, not what is most effective. This has been measured and reproduced.",
+          "image_prompt": "surgeon in operating room checking familiar instrument vs new one on tray"
+        },
+        {
+          "position": 2,
+          "text": "Atul Gawande's research in 'Complications' showed that surgical teams who used decision checklists — forcing them to name assumptions before operating — cut preventable errors by 47% across six hospitals. The checklist did not improve skill. It slowed the default assumption.",
+          "image_prompt": "surgical checklist on clipboard being reviewed before procedure hospital light"
+        },
+        {
+          "position": 3,
+          "text": "The pattern: pre-commitment to a process beats in-the-moment judgment when the stakes are high and cognitive load is real. Your brain under pressure is not your brain at rest.",
+          "image_prompt": "two brain scans labeled rested and under pressure different activation patterns"
+        }
+      ],
+      "action_item": "Before your next important decision, write a three-step checklist and follow it in order."
+    },
+    "9-10": {
+      "topic_hint": "decision making",
+      "title": "The Decision You Already Made",
+      "sections": [
+        {
+          "position": 1,
+          "text": "The hardest decisions are not the ones where you don't know what to do. They are the ones where you already know, and you're looking for permission or for someone to argue you out of it.",
+          "image_prompt": "person staring at filled-in form that hasn't been submitted yet"
+        },
+        {
+          "position": 2,
+          "text": "Across everything explored: the bias comes before the logic, the cost gets ignored, the assumption goes unchecked, and the pressure defeats the reasoning. The common thread is that the decision is rarely the hard part — seeing clearly is.",
+          "image_prompt": "single candle flame illuminating a room showing things previously in shadow"
+        },
+        {
+          "position": 3,
+          "text": "There is no decision-making system that removes the moment where you have to commit. All systems do is make that moment visible and honest. The rest is still yours.",
+          "image_prompt": "person standing at an open door light ahead foot raised to step"
+        }
+      ],
+      "action_item": "Name one decision you've been postponing. Write a date — not now, a real date — when you will make it."
+    }
+  },
+  "20+": {
+    "1": {
+      "topic_hint": "systems thinking",
+      "title": "The Loop Is the Unit",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Systems thinking is not about seeing more things. It is about recognizing that causal relationships run in loops, not lines. The popular model — A causes B, B causes C — fails because it assumes all causation is unidirectional. Real systems close back on themselves.",
+          "image_prompt": "linear chain of arrows on left side closed loop diagram on right side"
+        },
+        {
+          "position": 2,
+          "text": "A classic case: a thermostat detects temperature below threshold, activates heat, temperature rises, thermostat deactivates heat. The thermostat's action is caused by the very thing it produces. This is not a malfunction — it is a feedback loop, and it is the basic unit of stability in any system.",
+          "image_prompt": "thermostat wiring diagram showing temperature sensor and heater in closed circuit"
+        },
+        {
+          "position": 3,
+          "text": "The counter-intuitive consequence: interventions that appear to fix a system by cutting the loop — imposing a direct override — typically produce instability. The stability was the loop. Removing it removes the regulation.",
+          "image_prompt": "thermostat override switch system temperature graph spiking erratically"
+        }
+      ],
+      "action_item": "Draw a loop — any loop in your daily life where an output feeds back into an input."
+    },
+    "2-3": {
+      "topic_hint": "systems thinking",
+      "title": "Reinforcement Goes Both Ways",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Balancing feedback loops produce stability. Reinforcing loops produce exponential change — in both directions. Most people recognize compounding growth. Almost none recognize that the identical structure drives collapse. The math is symmetric; the consequences are not.",
+          "image_prompt": "two graphs one exponential growth one exponential collapse same curve shape mirrored"
+        },
+        {
+          "position": 2,
+          "text": "Bank runs are a reinforcing loop: fear of bank failure causes withdrawal, withdrawal depletes reserves, depletion confirms the fear. The 1930s US banking collapses were not primarily caused by bad loans — they were caused by a self-referential loop that FDIC insurance eventually severed by removing the confirmation signal.",
+          "image_prompt": "depression-era bank queue on street newspaper headlines visible in crowd"
+        },
+        {
+          "position": 3,
+          "text": "The first-order consequence most analysts miss: in reinforcing loops, the speed of the signal matters more than the size of the initial trigger. Slow signals produce manageable change. Fast signals produce phase transitions.",
+          "image_prompt": "speedometer with two identical amounts of force one applied slowly one instantly"
+        }
+      ],
+      "action_item": "Identify one reinforcing loop in your professional domain. Map what signal breaks or starts it."
+    },
+    "4-5": {
+      "topic_hint": "systems thinking",
+      "title": "The Leverage Point Paradox",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Donella Meadows identified twelve places to intervene in a system, ordered by leverage. The popular assumption is that changing numbers — tax rates, speeds, budgets — is the most accessible and effective intervention. It is ranked eleventh out of twelve. It is almost always the least effective option with real-world constraints.",
+          "image_prompt": "numbered list of leverage points on whiteboard numbers circled in order of power"
+        },
+        {
+          "position": 2,
+          "text": "The highest leverage point is the paradigm — the shared set of assumptions about what the system is for and who it serves. Changing a tax rate does not change who sets tax rates or why. Changing the goal structure of an institution does. The 1996 Welfare Reform Act changed numbers. The Civil Rights Act changed paradigms.",
+          "image_prompt": "two documents side by side one with changed figures one with changed founding mandate"
+        },
+        {
+          "position": 3,
+          "text": "The second-order consequence: high-leverage interventions are almost always invisible to the people inside the system, because the system's paradigm is precisely the frame through which its members perceive what is real and what is possible.",
+          "image_prompt": "person inside large machine looking at gears unable to see the frame holding them"
+        }
+      ],
+      "action_item": "Name one 'solution' in your domain that has been tried repeatedly without lasting effect. Identify which leverage point it was using."
+    },
+    "6-8": {
+      "topic_hint": "systems thinking",
+      "title": "Emergence Cannot Be Deduced",
+      "sections": [
+        {
+          "position": 1,
+          "text": "Emergence — properties that exist at the system level but not in any individual component — is the central concept that distinguishes systems thinking from reductionist analysis. You cannot predict traffic from studying one car. You cannot predict consciousness from studying one neuron. The properties are real but non-deducible from parts.",
+          "image_prompt": "single ant then ant colony trail showing property present only in aggregate"
+        },
+        {
+          "position": 2,
+          "text": "Philip Anderson's 1972 paper 'More is Different' is the clearest formal statement: at each level of organization, qualitatively new laws apply. Solid-state physics cannot be derived from particle physics even in principle. This is not a gap in knowledge — it is structural. The physics of one level does not contain the physics of the next.",
+          "image_prompt": "stacked boxes labeled particles atoms molecules cells organisms with arrows showing irreducibility"
+        },
+        {
+          "position": 3,
+          "text": "The implication for analysis: any methodology that only examines components will be structurally incapable of explaining system-level behavior. This is not a critique of reductionism — it is a statement about its scope. Reductionism is necessary but insufficient.",
+          "image_prompt": "microscope next to wide-angle lens on table both useful different scales"
+        }
+      ],
+      "action_item": "Name one system in your domain. List three properties that exist only at system level, not in any part."
+    },
+    "9-10": {
+      "topic_hint": "systems thinking",
+      "title": "The System You Are Inside",
+      "sections": [
+        {
+          "position": 1,
+          "text": "The deepest difficulty with systems thinking is not intellectual — it is positional. Every analyst is inside a system. Their tools, language, incentives, and attention are products of the system they are studying. There is no view from outside. There is only the view from where you stand.",
+          "image_prompt": "person drawing map of room they are standing inside perspective distortion visible"
+        },
+        {
+          "position": 2,
+          "text": "Gregory Bateson called this the 'double bind at the level of epistemology.' The framework you use to study a system is itself a product of a higher-order system. Changing the framework requires a perspective not available within it. Every paradigm shift in science required someone working from outside the ruling framework — often treated as wrong until the shift was complete.",
+          "image_prompt": "two frames one inside the other person trying to lift the outer frame from inside"
+        },
+        {
+          "position": 3,
+          "text": "This is not a counsel of despair. It is a specification of difficulty. You can study a system more honestly by mapping your own position in it, naming the incentives that shape your perception, and holding your models lightly. The loop always comes back around. The question is whether you see it when it does.",
+          "image_prompt": "compass held by hand shadow of holder visible in the frame cardinal directions all around"
+        }
+      ],
+      "action_item": "Write one assumption you hold about your field that you have never seriously questioned. Then question it for ten minutes."
+    }
+  }
+}

@@ -4,6 +4,19 @@ import { GenerationTask } from "../models/GenerationTask.js";
 import { getAiJobStatus } from "./aiClient.js";
 
 const SLEEP_MS = Number(process.env.AI_POLL_INTERVAL_MS || 1500);
+const AI_LIMIT_EXCEEDED_FALLBACK_TEXT = "Free Tier Expired. Request Upgrade!";
+
+function normalizeFailureMessage(error) {
+  const message = String(error?.message || error || "");
+  const lowered = message.toLowerCase();
+  const isAiLimitExceeded =
+    lowered.includes("rate limit") ||
+    lowered.includes("rate_limit_exceeded") ||
+    lowered.includes("tokens per day") ||
+    lowered.includes("free tier");
+
+  return isAiLimitExceeded ? AI_LIMIT_EXCEEDED_FALLBACK_TEXT : message;
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -115,7 +128,7 @@ export async function monitorTaskLoop(taskId, io) {
       }
 
       failTask.status = "failed";
-      failTask.lastError = String(error.message || error);
+      failTask.lastError = normalizeFailureMessage(error);
       await failTask.save();
 
       await Book.findByIdAndUpdate(failTask.bookId, {

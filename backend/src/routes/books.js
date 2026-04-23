@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { Book } from "../models/Book.js";
 import { Page } from "../models/Page.js";
+import { SampleBook } from "../models/SampleBook.js";
+import { SamplePage } from "../models/SamplePage.js";
 import { GenerationTask } from "../models/GenerationTask.js";
 import { submitCreateBookJob, submitNextPageJob } from "../services/aiClient.js";
 import { monitorTaskLoop } from "../services/taskMonitor.js";
@@ -11,13 +13,31 @@ export function createBooksRouter(io) {
   const validNeurotypes = new Set(["ADHD", "Dyslexia", "Autism", "None"]);
   const validLanguages = new Set(["English", "Hindi"]);
 
+  const getBookRecord = async (bookId) => {
+    const [book, sampleBook] = await Promise.all([Book.findById(bookId), SampleBook.findById(bookId)]);
+    if (book) {
+      return { kind: "book", doc: book };
+    }
+    if (sampleBook) {
+      return { kind: "sample", doc: sampleBook };
+    }
+    return null;
+  };
+
   router.get("/", async (_req, res, next) => {
     try {
-      const books = await Book.find()
-        .sort({ createdAt: -1 })
-        .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt")
-        .lean();
-      return res.json({ books });
+      const [books, sampleBooks] = await Promise.all([
+        Book.find()
+          .sort({ createdAt: -1 })
+          .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt")
+          .lean(),
+        SampleBook.find()
+          .sort({ createdAt: -1 })
+          .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt isSample")
+          .lean()
+      ]);
+
+      return res.json({ books: [...sampleBooks, ...books] });
     } catch (error) {
       return next(error);
     }
@@ -98,16 +118,21 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId", async (req, res, next) => {
     try {
-      const book = await Book.findById(req.params.bookId).lean();
-      if (!book) {
+      const record = await getBookRecord(req.params.bookId);
+      if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
 
+      const book = record.doc.toObject();
+      const isSample = record.kind === "sample";
+
       const pageNumber = Number(req.query.pageNumber || book.currentPageNumber || 1);
-      const page = await Page.findOne({ bookId: book._id, pageNumber }).lean();
+      const page = isSample
+        ? await SamplePage.findOne({ sampleBookId: book._id, pageNumber }).lean()
+        : await Page.findOne({ bookId: book._id, pageNumber }).lean();
 
       return res.json({
-        book,
+        book: { ...book, isSample },
         page: page || null
       });
     } catch (error) {
@@ -117,10 +142,16 @@ export function createBooksRouter(io) {
 
   router.post("/:bookId/next", async (req, res, next) => {
     try {
-      const book = await Book.findById(req.params.bookId);
-      if (!book) {
+      const record = await getBookRecord(req.params.bookId);
+      if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
+
+      if (record.kind === "sample") {
+        return res.status(400).json({ message: "Sample book pages are fixed and cannot be generated." });
+      }
+
+      const book = record.doc;
 
       const fromPageNumber = Number(req.body?.fromPageNumber) || 0;
       const latestPage = await Page.findOne({ bookId: book._id }).sort({ pageNumber: -1 });
@@ -196,13 +227,18 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/pages/:pageNumber/audio", async (req, res, next) => {
     try {
-      const book = await Book.findById(req.params.bookId).lean();
-      if (!book) {
+      const record = await getBookRecord(req.params.bookId);
+      if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
 
+      const book = record.doc.toObject();
+      const isSample = record.kind === "sample";
+
       const pageNumber = Number(req.params.pageNumber);
-      const page = await Page.findOne({ bookId: book._id, pageNumber }).lean();
+      const page = isSample
+        ? await SamplePage.findOne({ sampleBookId: book._id, pageNumber }).lean()
+        : await Page.findOne({ bookId: book._id, pageNumber }).lean();
       if (!page) {
         return res.status(404).json({ message: "Page not found" });
       }
@@ -223,18 +259,10 @@ export function createBooksRouter(io) {
       const actionItemText = actionItem ? `Action item. ${actionItem}` : "";
       const aggregated = `${pageTitle}. ${sections.join(" ")} ${actionItemText}`.trim();
       const language = book.language === "Hindi" ? "Hindi" : "English";
-      const ttsPayload =
-        language === "Hindi"
-          ? {
-              text: aggregated,
-              voice: "lulwa",
-              model: "canopylabs/orpheus-arabic-saudi"
-            }
-          : {
-              text: aggregated,
-              voice: "autumn",
-              model: process.env.GROQ_TTS_MODEL || "canopylabs/orpheus-v1-english"
-            };
+      const ttsPayload = {
+        text: aggregated,
+        language,
+      };
       const aiBaseUrl = process.env.AI_LAYER_URL || "http://localhost:8000";
       const aiResponse = await fetch(`${aiBaseUrl}/tts`, {
         method: "POST",
@@ -244,11 +272,28 @@ export function createBooksRouter(io) {
 
       if (!aiResponse.ok) {
         const detail = await aiResponse.text();
-        return res.status(502).json({ message: "TTS upstream failed", detail });
+        const lowered = detail.toLowerCase();
+        const isRateLimited =
+          aiResponse.status === 429 ||
+          lowered.includes("rate limit") ||
+          lowered.includes("rate_limit_exceeded") ||
+          lowered.includes("tokens per day") ||
+          lowered.includes("free tier");
+
+        if (isRateLimited) {
+          return res.status(429).json({ message: "Free Tier Expired. Request Upgrade!" });
+        }
+
+        return res.status(502).json({ message: "TTS upstream failed" });
       }
 
       const arrayBuffer = await aiResponse.arrayBuffer();
-      res.setHeader("Content-Type", "audio/wav");
+      if (!arrayBuffer.byteLength) {
+        return res.status(502).json({ message: "TTS upstream returned empty audio" });
+      }
+
+      const upstreamType = aiResponse.headers.get("content-type") || "audio/wav";
+      res.setHeader("Content-Type", upstreamType);
       res.setHeader("Cache-Control", "no-store");
       return res.send(Buffer.from(arrayBuffer));
     } catch (error) {
@@ -258,7 +303,16 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/pages", async (req, res, next) => {
     try {
-      const pages = await Page.find({ bookId: req.params.bookId }).sort({ pageNumber: 1 }).lean();
+      const record = await getBookRecord(req.params.bookId);
+      if (!record) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      const pages =
+        record.kind === "sample"
+          ? await SamplePage.find({ sampleBookId: req.params.bookId }).sort({ pageNumber: 1 }).lean()
+          : await Page.find({ bookId: req.params.bookId }).sort({ pageNumber: 1 }).lean();
+
       return res.json({ pages });
     } catch (error) {
       return next(error);
@@ -267,6 +321,15 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/progress", async (req, res, next) => {
     try {
+      const record = await getBookRecord(req.params.bookId);
+      if (!record) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      if (record.kind === "sample") {
+        return res.json({ tasks: [] });
+      }
+
       const tasks = await GenerationTask.find({ bookId: req.params.bookId }).sort({ createdAt: -1 }).lean();
 
       return res.json({ tasks });
@@ -277,10 +340,16 @@ export function createBooksRouter(io) {
 
   router.delete("/:bookId", async (req, res, next) => {
     try {
-      const book = await Book.findById(req.params.bookId);
-      if (!book) {
+      const record = await getBookRecord(req.params.bookId);
+      if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
+
+      if (record.kind === "sample") {
+        return res.status(403).json({ message: "Sample books cannot be deleted." });
+      }
+
+      const book = record.doc;
 
       await Promise.all([
         GenerationTask.deleteMany({ bookId: book._id }),

@@ -16,6 +16,7 @@ type BookSummary = {
   currentPageNumber: number;
   totalPagesGenerated: number;
   coverImageUrl?: string;
+  isSample?: boolean;
 };
 
 const rotations = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0", "-rotate-3"];
@@ -36,6 +37,8 @@ const Books = () => {
   const [language, setLanguage] = useState<"English" | "Hindi">("English");
 
   const liveCount = useMemo(() => books.filter((book) => book.status !== "failed").length, [books]);
+  const sampleBooks = useMemo(() => books.filter((book) => book.isSample), [books]);
+  const generatedBooks = useMemo(() => books.filter((book) => !book.isSample), [books]);
 
   const refresh = async () => {
     const response = await listBooks();
@@ -129,53 +132,93 @@ const Books = () => {
             No books yet. Create your first AI-powered book.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {books.map((book, i) => (
-              <div key={book._id} className="relative">
-                <button
-                  onClick={() => navigate(`/books/${book._id}?page=1`)}
-                  className={`${rotations[i % rotations.length]} brutal-press text-left w-full`}
-                >
-                  <div className="bg-brainy-yellow brutal-border brutal-shadow overflow-hidden">
-                    <div className="aspect-[4/5] relative bg-card p-5 flex flex-col justify-between">
-                      {book.coverImageUrl ? (
-                        <img
-                          src={book.coverImageUrl}
-                          alt={`${book.title} cover`}
-                          className="absolute inset-0 w-full h-full object-cover opacity-30"
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : null}
-                      <div>
-                        <p className="font-display uppercase text-xs mb-2">{book.status}</p>
-                        <h3 className="font-display text-xl sm:text-2xl uppercase leading-tight mb-2">{book.title}</h3>
-                        <p className="font-body font-bold text-sm">Topic: {book.topic}</p>
-                      </div>
-
-                      <div className="text-sm font-bold">
-                        <p>Age: {book.ageGroup}</p>
-                        <p>Neurotype: {book.neurotype}</p>
-                        <p>Language: {book.language || "English"}</p>
-                        <p>Pages: {book.totalPagesGenerated}</p>
+          <div className="space-y-10">
+            {sampleBooks.length > 0 ? (
+              <div>
+                <h2 className="font-display uppercase text-2xl sm:text-3xl mb-4">Creator Samples</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {sampleBooks.map((book, i) => (
+                    <div key={book._id} className="relative">
+                      <button
+                        onClick={() => navigate(`/books/${book._id}?page=1`)}
+                        className={`${rotations[i % rotations.length]} brutal-press text-left w-full`}
+                      >
+                        <div className="bg-brainy-lime brutal-border brutal-shadow overflow-hidden">
+                          <div className="aspect-[4/5] relative bg-card overflow-hidden">
+                            {book.coverImageUrl ? (
+                              <img
+                                src={book.coverImageUrl}
+                                alt={`${book.title} cover`}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : null}
+                          </div>
+                        </div>
+                      </button>
+                      <div className="absolute bottom-3 right-3 z-10 bg-card brutal-border brutal-shadow-sm px-2 py-1 font-display uppercase text-xs">
+                        Sample
                       </div>
                     </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    void onDelete(book._id);
-                  }}
-                  disabled={deletingId === book._id}
-                  className="absolute bottom-3 right-3 z-10 bg-card brutal-border brutal-shadow-sm brutal-press p-2 disabled:opacity-50"
-                  aria-label="Delete book"
-                >
-                  <Trash2 className="w-4 h-4" strokeWidth={3} />
-                </button>
+                  ))}
+                </div>
               </div>
-            ))}
+            ) : null}
+
+            {generatedBooks.length > 0 ? (
+              <div>
+                <h2 className="font-display uppercase text-2xl sm:text-3xl mb-4">Your Books</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {generatedBooks.map((book, i) => (
+                    <div key={book._id} className="relative">
+                      <button
+                        onClick={() => navigate(`/books/${book._id}?page=1`)}
+                        className={`${rotations[i % rotations.length]} brutal-press text-left w-full`}
+                      >
+                        <div className="bg-brainy-yellow brutal-border brutal-shadow overflow-hidden">
+                          <div className="aspect-[4/5] relative bg-card p-5 flex flex-col justify-between">
+                            {book.coverImageUrl ? (
+                              <img
+                                src={book.coverImageUrl}
+                                alt={`${book.title} cover`}
+                                className="absolute inset-0 w-full h-full object-cover opacity-30"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : null}
+                            <div>
+                              <p className="font-display uppercase text-xs mb-2">{book.status}</p>
+                              <h3 className="font-display text-xl sm:text-2xl uppercase leading-tight mb-2">{book.title}</h3>
+                              <p className="font-body font-bold text-sm">Topic: {book.topic}</p>
+                            </div>
+
+                            <div className="text-sm font-bold">
+                              <p>Age: {book.ageGroup}</p>
+                              <p>Neurotype: {book.neurotype}</p>
+                              <p>Language: {book.language || "English"}</p>
+                              <p>Pages: {book.totalPagesGenerated}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void onDelete(book._id);
+                        }}
+                        disabled={deletingId === book._id}
+                        className="absolute bottom-3 right-3 z-10 bg-card brutal-border brutal-shadow-sm brutal-press p-2 disabled:opacity-50"
+                        aria-label="Delete book"
+                      >
+                        <Trash2 className="w-4 h-4" strokeWidth={3} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
       </section>

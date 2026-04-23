@@ -7,6 +7,8 @@ import { connectDB } from "./db.js";
 import { createBooksRouter } from "./routes/books.js";
 import { createFeedbackRouter } from "./routes/feedback.js";
 import { Book } from "./models/Book.js";
+import { SampleBook } from "./models/SampleBook.js";
+import { seedSampleBooksFromAssets } from "./services/sampleBooksSeeder.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -32,6 +34,14 @@ app.use(
 );
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res.json({
+    service: "bright-minds-backend",
+    status: "ok",
+    health: "/health"
+  });
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
@@ -44,11 +54,17 @@ app.use("/api/books", createBooksRouter(io));
 app.use("/api/feedback", createFeedbackRouter());
 
 io.on("connection", async (socket) => {
-  const books = await Book.find()
-    .sort({ createdAt: -1 })
-    .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated createdAt")
-    .lean();
-  socket.emit("books:bootstrap", books);
+  const [books, sampleBooks] = await Promise.all([
+    Book.find()
+      .sort({ createdAt: -1 })
+      .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated createdAt")
+      .lean(),
+    SampleBook.find()
+      .sort({ createdAt: -1 })
+      .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt isSample")
+      .lean()
+  ]);
+  socket.emit("books:bootstrap", [...sampleBooks, ...books]);
 });
 
 app.use((err, _req, res, _next) => {
@@ -60,6 +76,7 @@ const PORT = Number(process.env.PORT || 4000);
 
 async function start() {
   await connectDB(process.env.MONGO_URI);
+  await seedSampleBooksFromAssets();
   server.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
   });

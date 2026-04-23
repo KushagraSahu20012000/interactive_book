@@ -4,7 +4,6 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Square, Volume2 } from "
 import { getBookPage, getPageAudioUrl, requestNextPage } from "@/lib/api";
 import { socket } from "@/lib/socket";
 import { PixelImageCanvas } from "@/components/PixelImageCanvas";
-import { StickyFeedbackButtons } from "@/components/brainy/StickyFeedbackButtons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,10 +46,11 @@ type BookData = {
   coverImagePixelArray: number[][];
   coverImageWidth: number;
   coverImageHeight: number;
+  isSample?: boolean;
 };
 
 const sectionColors = ["bg-brainy-yellow", "bg-brainy-sky", "bg-brainy-lime"];
-const textColors = ["bg-brainy-pink", "bg-brainy-coral", "bg-brainy-purple"];
+const textColors = ["text-[#ff0f7b]", "text-[#ff5a1f]", "text-[#5b2ca0]"];
 const MAX_PAGE_LIMIT_MESSAGE = "Maximum page limit reached (10 pages).";
 
 const BookDetail = () => {
@@ -66,6 +66,7 @@ const BookDetail = () => {
   const [error, setError] = useState("");
   const [creatingNext, setCreatingNext] = useState(false);
   const [showLimitPopup, setShowLimitPopup] = useState(false);
+  const [showSamplePopup, setShowSamplePopup] = useState(false);
   const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const suppressAudioErrorRef = useRef(false);
@@ -95,6 +96,12 @@ const BookDetail = () => {
       .catch((loadError) => setError(String(loadError.message || loadError)))
       .finally(() => setLoading(false));
   }, [id, pageNumber]);
+
+  useEffect(() => {
+    if (book?.isSample) {
+      setShowSamplePopup(true);
+    }
+  }, [book?._id, book?.isSample]);
 
   useEffect(() => {
     if (!id) {
@@ -130,6 +137,16 @@ const BookDetail = () => {
 
   const handleNext = async () => {
     if (!id || creatingNext) {
+      return;
+    }
+
+    if (book?.isSample) {
+      const maxPage = Math.max(1, Number(book.totalPagesGenerated || 1));
+      if (pageNumber >= maxPage) {
+        setShowLimitPopup(true);
+        return;
+      }
+      setSearchParams({ page: String(pageNumber + 1) });
       return;
     }
 
@@ -199,13 +216,34 @@ const BookDetail = () => {
     setError("");
     try {
       suppressAudioErrorRef.current = false;
-      const audio = new Audio(`${getPageAudioUrl(id, pageNumber)}?ts=${Date.now()}`);
+      const audioUrl = `${getPageAudioUrl(id, pageNumber)}?ts=${Date.now()}`;
+      const response = await fetch(audioUrl);
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || `Audio request failed (${response.status})`);
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.toLowerCase().includes("audio")) {
+        const body = await response.text();
+        throw new Error(body || "Audio service returned non-audio response.");
+      }
+
+      const audioBlob = await response.blob();
+      if (!audioBlob.size) {
+        throw new Error("Audio response was empty.");
+      }
+
+      const objectUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(objectUrl);
       audioRef.current = audio;
       audio.onended = () => {
+        URL.revokeObjectURL(objectUrl);
         audioRef.current = null;
         setAudioState("idle");
       };
       audio.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
         if (suppressAudioErrorRef.current) {
           suppressAudioErrorRef.current = false;
           return;
@@ -220,6 +258,35 @@ const BookDetail = () => {
       setAudioState("idle");
       setError(String((audioError as Error).message || audioError));
     }
+  };
+
+  const renderInteractiveText = (text: string) => {
+    const normalized = text.replace(/\s+/g, " ").trim();
+    const sentences = normalized
+      .split(/(?<=\.(?:["']))\s+|(?<=\.)\s+/)
+      .map((sentence) => sentence.trim())
+      .filter(Boolean);
+
+    return (sentences.length ? sentences : [normalized]).map((sentence, sentenceIdx) => {
+      const tokens = sentence.split(/(\s+)/);
+      return (
+        <span key={`sentence-${sentenceIdx}`} className="block leading-relaxed mb-1.5 last:mb-0">
+          {tokens.map((token, tokenIdx) => {
+            if (/^\s+$/.test(token)) {
+              return <span key={`space-${sentenceIdx}-${tokenIdx}`}>{token}</span>;
+            }
+            return (
+              <span
+                key={`word-${sentenceIdx}-${tokenIdx}`}
+                className="inline-block transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:scale-[1.03]"
+              >
+                {token}
+              </span>
+            );
+          })}
+        </span>
+      );
+    });
   };
 
   if (loading) {
@@ -272,7 +339,34 @@ const BookDetail = () => {
       : "text-base sm:text-xl lg:text-2xl";
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="min-h-screen bg-background">
+      <AlertDialog open={showSamplePopup} onOpenChange={setShowSamplePopup}>
+        <AlertDialogContent className="brutal-border bg-brainy-lime">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display uppercase text-2xl">Creator Sample Book</AlertDialogTitle>
+            <AlertDialogDescription className="text-foreground font-bold space-y-2">
+              <p>
+                This is a sample provided by our creator containing the ideal book quality you can expect from this application.
+              </p>
+              <p>
+                It is created using coming-of-age AI models, the best of them. Enjoy the book.
+              </p>
+              <p>
+                Once completed, do not forget to click Request Upgrade and suggest the price at which you would be glad to generate your own book of this quality.
+              </p>
+              <p>
+                For now, enjoy our completely free book generation using Create Book.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="font-display uppercase bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press">
+              Start Reading
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={showLimitPopup} onOpenChange={setShowLimitPopup}>
         <AlertDialogContent className="brutal-border bg-brainy-yellow">
           <AlertDialogHeader>
@@ -289,18 +383,15 @@ const BookDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="bg-brainy-lime brutal-border border-x-0 px-3 sm:px-6 py-4 grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-4">
+      <div className="bg-brainy-lime brutal-border border-x-0 px-3 sm:px-5 py-2 sm:py-3 grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate("/books")}
-            className="bg-card brutal-border brutal-shadow-sm brutal-press p-2"
+            className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5"
             aria-label="Back to books"
           >
-            <ArrowLeft className="w-5 h-5" strokeWidth={3} />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
           </button>
-          <span className="font-display text-[10px] sm:text-xs uppercase tracking-wider text-foreground/80">
-            Page {pageNumber}
-          </span>
         </div>
 
         <div className="min-w-0 text-center px-2">
@@ -324,38 +415,38 @@ const BookDetail = () => {
           <button
             onClick={handleToggleAudio}
             disabled={audioState === "loading"}
-            className="bg-brainy-yellow brutal-border brutal-shadow-sm brutal-press p-2 disabled:opacity-50"
+            className="bg-brainy-yellow brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
             aria-label={audioState === "playing" ? "Stop audio" : "Play audio"}
             title={audioState === "playing" ? "Stop audio" : "Read this page aloud"}
           >
             {audioState === "loading" ? (
-              <Loader2 className="w-5 h-5 animate-spin" strokeWidth={3} />
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
             ) : audioState === "playing" ? (
-              <Square className="w-5 h-5" strokeWidth={3} />
+              <Square className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
             ) : (
-              <Volume2 className="w-5 h-5" strokeWidth={3} />
+              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
             )}
           </button>
           <button
             onClick={handlePrevious}
             disabled={pageNumber <= 1}
-            className="bg-card brutal-border brutal-shadow-sm brutal-press p-2 disabled:opacity-50"
+            className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
             aria-label="Previous page"
             title="Previous page"
           >
-            <ChevronLeft className="w-5 h-5" strokeWidth={3} />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
           </button>
           <button
             onClick={handleNext}
             disabled={creatingNext}
-            className="bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press p-2 disabled:opacity-50"
+            className="bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
             aria-label="Next page"
             title="Next page"
           >
             {creatingNext ? (
-              <Loader2 className="w-5 h-5 animate-spin" strokeWidth={3} />
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
             ) : (
-              <ChevronRight className="w-5 h-5" strokeWidth={3} />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
             )}
           </button>
         </div>
@@ -363,22 +454,32 @@ const BookDetail = () => {
 
       {error ? <p className="px-6 pt-3 text-red-700 font-bold">{error}</p> : null}
 
-      <div className="flex-1 min-h-0 px-3 sm:px-6 py-3 sm:py-4 overflow-y-auto">
-        <div className="max-w-6xl mx-auto h-full flex flex-col gap-3 sm:gap-4 pb-4">
+      <div className="px-3 sm:px-6 py-3 sm:py-4">
+        <div className="max-w-6xl mx-auto flex flex-col gap-3 sm:gap-4 pb-16">
           {[0, 1, 2].map((rowIdx) => {
             const section = sections[rowIdx];
             const imageOnLeft = rowIdx % 2 === 0;
             const imgBg = sectionColors[rowIdx];
-            const txtBg = textColors[rowIdx];
+            const txtColor = textColors[rowIdx];
+            const sectionText = (section.text || "").trim();
+            const sectionTextLength = sectionText.length;
+            const sectionTextSizeClass =
+              sectionTextLength <= 180
+                ? "text-lg sm:text-xl lg:text-2xl"
+                : sectionTextLength <= 280
+                ? "text-base sm:text-lg lg:text-xl"
+                : sectionTextLength <= 420
+                ? "text-sm sm:text-base lg:text-lg"
+                : "text-xs sm:text-sm lg:text-base";
 
             return (
               <div
                 key={rowIdx}
-                className={`flex-1 min-h-0 grid grid-cols-2 gap-3 sm:gap-4 ${
+                className={`grid grid-cols-2 gap-3 sm:gap-4 ${
                   imageOnLeft ? "" : "[&>*:first-child]:order-2"
                 }`}
               >
-                <div className={`${imgBg} brutal-border brutal-shadow-sm overflow-hidden`}>
+                <div className={`${imgBg} brutal-border brutal-shadow-sm overflow-hidden aspect-[21/9]`}>
                   <PixelImageCanvas
                     pixelArray={section.imagePixelArray}
                     imageUrl={section.imageUrl}
@@ -388,9 +489,9 @@ const BookDetail = () => {
                     fallbackText={section.imagePrompt || "Generating..."}
                   />
                 </div>
-                <div className={`${txtBg} brutal-border brutal-shadow-sm p-3 sm:p-5 flex items-center`}>
-                  <p className="font-body font-bold text-sm sm:text-base lg:text-lg leading-snug">
-                    {section.text || "Generating section text..."}
+                <div className="p-3 sm:p-5 flex items-center overflow-hidden aspect-[21/9]">
+                  <p className={`section-text-vivid font-body font-black ${txtColor} ${sectionTextSizeClass} leading-snug break-words`}>
+                    {renderInteractiveText(sectionText || "Generating section text...")}
                   </p>
                 </div>
               </div>
@@ -408,7 +509,10 @@ const BookDetail = () => {
         </div>
       </div>
 
-      <StickyFeedbackButtons />
+      <div className="fixed bottom-4 right-4 z-20 bg-card brutal-border brutal-shadow-sm px-3 py-1.5 font-display uppercase text-xs sm:text-sm">
+        Page {pageNumber}
+      </div>
+
     </div>
   );
 };
