@@ -5,6 +5,7 @@ import express from "express";
 import { Server } from "socket.io";
 import { connectDB } from "./db.js";
 import { createBooksRouter } from "./routes/books.js";
+import { createAuthRouter } from "./routes/auth.js";
 import { createFeedbackRouter } from "./routes/feedback.js";
 import { Book } from "./models/Book.js";
 import { SampleBook } from "./models/SampleBook.js";
@@ -51,6 +52,7 @@ app.get("/health/ai", (_req, res) => {
 });
 
 app.use("/api/books", createBooksRouter(io));
+app.use("/api/auth", createAuthRouter());
 app.use("/api/feedback", createFeedbackRouter());
 
 io.on("connection", async (socket) => {

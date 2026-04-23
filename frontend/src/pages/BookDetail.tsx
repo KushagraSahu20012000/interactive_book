@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Square, Volume2 } from "lucide-react";
 import { getBookPage, getPageAudioUrl, requestNextPage } from "@/lib/api";
+import { isAuthenticated as hasAuthSession } from "@/lib/auth";
 import { socket } from "@/lib/socket";
 import { PixelImageCanvas } from "@/components/PixelImageCanvas";
 import {
@@ -124,6 +125,11 @@ const BookDetail = () => {
   };
 
   useEffect(() => {
+    if (!hasAuthSession()) {
+      navigate("/books");
+      return;
+    }
+
     if (!id) {
       return;
     }
@@ -132,7 +138,7 @@ const BookDetail = () => {
     load()
       .catch((loadError) => setError(String(loadError.message || loadError)))
       .finally(() => setLoading(false));
-  }, [id, pageNumber]);
+  }, [id, pageNumber, navigate]);
 
   useEffect(() => {
     if (book?.isSample) {

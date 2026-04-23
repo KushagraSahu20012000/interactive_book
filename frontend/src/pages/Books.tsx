@@ -2,8 +2,11 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TopNav } from "@/components/brainy/TopNav";
 import { StickyFeedbackButtons } from "@/components/brainy/StickyFeedbackButtons";
-import { createBook, deleteBook, listBooks } from "@/lib/api";
+import { createBook, deleteBook, listBooks, loginUser, loginWithGoogle, registerUser } from "@/lib/api";
 import { Loader2, Trash2 } from "lucide-react";
+import { clearAuthSession, isAuthenticated as hasAuthSession, saveAuthSession } from "@/lib/auth";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 
 type BookSummary = {
   _id: string;
@@ -20,9 +23,23 @@ type BookSummary = {
 };
 
 const rotations = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0", "-rotate-3"];
+const hasGoogleClientId = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
 const Books = () => {
   const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(hasAuthSession());
+  const [showAuthModal, setShowAuthModal] = useState(!hasAuthSession());
+  const [authMode, setAuthMode] = useState<"login" | "register">("register");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  const [registerName, setRegisterName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerDateOfBirth, setRegisterDateOfBirth] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
   const [books, setBooks] = useState<BookSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,10 +63,76 @@ const Books = () => {
   };
 
   useEffect(() => {
+    if (!authenticated) {
+      setLoading(false);
+      return;
+    }
+
     refresh()
       .catch((loadError) => setError(String(loadError.message || loadError)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [authenticated]);
+
+  const completeAuth = (payload: { token: string; user: any }) => {
+    saveAuthSession(payload.token, payload.user);
+    setAuthenticated(true);
+    setShowAuthModal(false);
+    setAuthError("");
+  };
+
+  const handleRegister = async (event: FormEvent) => {
+    event.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+
+    try {
+      const payload = await registerUser({
+        name: registerName,
+        email: registerEmail,
+        dateOfBirth: registerDateOfBirth,
+        password: registerPassword
+      });
+      completeAuth(payload);
+    } catch (registerError) {
+      setAuthError(String((registerError as Error).message || registerError));
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogin = async (event: FormEvent) => {
+    event.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+
+    try {
+      const payload = await loginUser({ email: loginEmail, password: loginPassword });
+      completeAuth(payload);
+    } catch (loginError) {
+      setAuthError(String((loginError as Error).message || loginError));
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    const idToken = credentialResponse.credential || "";
+    if (!idToken) {
+      setAuthError("Google login did not return a credential token.");
+      return;
+    }
+
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const payload = await loginWithGoogle(idToken);
+      completeAuth(payload);
+    } catch (googleError) {
+      setAuthError(String((googleError as Error).message || googleError));
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const onCreate = async (event: FormEvent) => {
     event.preventDefault();
@@ -97,6 +180,138 @@ const Books = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Dialog
+        open={showAuthModal}
+        onOpenChange={(open) => {
+          if (authenticated) {
+            setShowAuthModal(open);
+          }
+        }}
+      >
+        <DialogContent className="brutal-border bg-card max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase text-2xl">Login to Continue</DialogTitle>
+            <DialogDescription className="font-bold text-foreground">
+              Sign in or create your account to access Books.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className={`flex-1 px-3 py-2 font-display uppercase brutal-border brutal-shadow-sm ${
+                authMode === "register" ? "bg-brainy-pink text-primary-foreground" : "bg-background"
+              }`}
+              onClick={() => setAuthMode("register")}
+            >
+              Register
+            </button>
+            <button
+              type="button"
+              className={`flex-1 px-3 py-2 font-display uppercase brutal-border brutal-shadow-sm ${
+                authMode === "login" ? "bg-brainy-pink text-primary-foreground" : "bg-background"
+              }`}
+              onClick={() => setAuthMode("login")}
+            >
+              Login
+            </button>
+          </div>
+
+          {authMode === "register" ? (
+            <form onSubmit={handleRegister} className="space-y-3">
+              <input
+                value={registerName}
+                onChange={(event) => setRegisterName(event.target.value)}
+                placeholder="Full name"
+                className="w-full border-4 border-foreground p-2 bg-background"
+                required
+              />
+              <input
+                value={registerEmail}
+                onChange={(event) => setRegisterEmail(event.target.value)}
+                type="email"
+                placeholder="Email"
+                className="w-full border-4 border-foreground p-2 bg-background"
+                required
+              />
+              <input
+                value={registerDateOfBirth}
+                onChange={(event) => setRegisterDateOfBirth(event.target.value)}
+                type="date"
+                className="w-full border-4 border-foreground p-2 bg-background"
+                required
+              />
+              <input
+                value={registerPassword}
+                onChange={(event) => setRegisterPassword(event.target.value)}
+                type="password"
+                placeholder="Create password"
+                className="w-full border-4 border-foreground p-2 bg-background"
+                minLength={6}
+                required
+              />
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-brainy-lime"
+              >
+                {authLoading ? "Creating..." : "Create Account"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-3">
+              <input
+                value={loginEmail}
+                onChange={(event) => setLoginEmail(event.target.value)}
+                type="email"
+                placeholder="Email"
+                className="w-full border-4 border-foreground p-2 bg-background"
+                required
+              />
+              <input
+                value={loginPassword}
+                onChange={(event) => setLoginPassword(event.target.value)}
+                type="password"
+                placeholder="Password"
+                className="w-full border-4 border-foreground p-2 bg-background"
+                required
+              />
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-brainy-sky"
+              >
+                {authLoading ? "Logging in..." : "Login"}
+              </button>
+            </form>
+          )}
+
+          <div className="border-t-4 border-foreground pt-3">
+            <p className="font-display uppercase text-xs mb-2">Or continue with Google</p>
+            {hasGoogleClientId ? (
+              <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => setAuthError("Google login failed")} />
+            ) : (
+              <p className="text-sm font-bold text-muted-foreground">Set VITE_GOOGLE_CLIENT_ID to enable Google login.</p>
+            )}
+          </div>
+
+          {authError ? <p className="text-red-700 font-bold text-sm">{authError}</p> : null}
+          {authenticated ? (
+            <button
+              type="button"
+              className="px-3 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-background"
+              onClick={() => {
+                clearAuthSession();
+                setAuthenticated(false);
+                setShowAuthModal(true);
+              }}
+            >
+              Logout
+            </button>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
       <TopNav />
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-10">

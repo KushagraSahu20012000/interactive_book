@@ -1,10 +1,17 @@
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = localStorage.getItem("bright_minds_auth_token") || "";
+  const headers = new Headers(init?.headers || {});
+  if (!headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
   const response = await fetch(`${BACKEND_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers,
     ...init
   });
 
@@ -80,5 +87,38 @@ export function submitSuggestion(payload: SuggestionPayload) {
   return request<{ ok: boolean; id: string }>("/api/feedback/suggestion", {
     method: "POST",
     body: JSON.stringify(payload)
+  });
+}
+
+export type AuthPayload = {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    dateOfBirth: string;
+    authProvider: "local" | "google";
+    emailHash: string;
+  };
+};
+
+export function registerUser(payload: { name: string; email: string; dateOfBirth: string; password: string }) {
+  return request<AuthPayload>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function loginUser(payload: { email: string; password: string }) {
+  return request<AuthPayload>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function loginWithGoogle(idToken: string) {
+  return request<AuthPayload>("/api/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ idToken })
   });
 }

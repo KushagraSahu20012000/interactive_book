@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "backend/**"
+      - "Assets/sample books/environment - 5-10/**"
       - ".github/workflows/deploy-hf-backend-space.yml"
   workflow_dispatch:
 
@@ -20,8 +21,16 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
+      - name: Install rsync, git-lfs, and git-xet prerequisites
+        run: sudo apt-get update && sudo apt-get install -y rsync git-lfs curl unzip
+
+      - name: Install and configure Git Xet
+        run: |
+          set -euo pipefail
+          git lfs install --skip-repo
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/huggingface/xet-core/refs/heads/main/git_xet/install.sh | sh
+          git xet install
+          git xet --version
 
       - name: Deploy backend to Hugging Face Space
         env:
@@ -61,6 +70,15 @@ jobs:
             --exclude "node_modules" \
             --exclude ".env" \
             "$GITHUB_WORKSPACE/backend/" "$WORKDIR/"
+
+          if [ -d "$GITHUB_WORKSPACE/Assets" ]; then
+            mkdir -p "$WORKDIR/Assets"
+            rsync -av --delete \
+              --exclude ".git" \
+              "$GITHUB_WORKSPACE/Assets/" "$WORKDIR/Assets/"
+          else
+            rm -rf "$WORKDIR/Assets"
+          fi
 
           cd "$WORKDIR"
           if [ -n "$(git status --porcelain)" ]; then
