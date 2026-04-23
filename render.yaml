@@ -1,0 +1,65 @@
+services:
+  - type: web
+    name: interactive-book-backend
+    env: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 4000
+      - key: MONGO_URI
+        sync: false
+      - key: AI_LAYER_URL
+        value: https://interactive-book-ai.onrender.com
+      - key: CLIENT_ORIGIN
+        value: https://interactive-book-frontend.onrender.com
+      - key: AI_POLL_INTERVAL_MS
+        value: 1500
+
+  - type: web
+    name: interactive-book-ai
+    env: python
+    rootDir: ai_layer
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start_ai_layer.sh
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: HF_TOKEN
+        sync: false
+      - key: HF_API_KEY
+        sync: false
+      - key: HF_PROVIDER
+        value: nscale
+      - key: HF_IMAGE_MODEL
+        value: stabilityai/stable-diffusion-xl-base-1.0
+      - key: IMAGE_SOURCE
+        value: pexels
+      - key: PEXELS_API_KEY
+        sync: false
+
+  - type: web
+    name: interactive-book-frontend
+    env: static
+    rootDir: frontend
+    plan: free
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_BACKEND_URL
+        value: https://interactive-book-backend.onrender.com

@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Brainy Books — Neubrutalist Design System
+   All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Cream paper background */
+    --background: 47 50% 95%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    /* Hot pink primary */
+    --primary: 340 95% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Electric yellow */
+    --secondary: 50 100% 60%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 47 30% 90%;
+    --muted-foreground: 0 0% 25%;
+
+    /* Sky blue */
+    --accent: 200 95% 65%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 90% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 340 95% 60%;
+
+    --radius: 0.5rem;
+
+    /* Brainy Books palette */
+    --brainy-pink: 340 95% 60%;
+    --brainy-yellow: 50 100% 60%;
+    --brainy-sky: 200 95% 65%;
+    --brainy-lime: 90 70% 55%;
+    --brainy-coral: 14 90% 65%;
+    --brainy-purple: 270 70% 65%;
+    --brainy-cream: 47 50% 95%;
+    --brainy-ink: 0 0% 0%;
+
+    /* Hard offset shadows (neubrutalist) */
+    --shadow-brutal: 8px 8px 0 hsl(var(--brainy-ink));
+    --shadow-brutal-sm: 4px 4px 0 hsl(var(--brainy-ink));
+    --shadow-brutal-lg: 12px 12px 0 hsl(var(--brainy-ink));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-weight: 700;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: 'Archivo Black', sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .brutal-border {
+    @apply border-[3px] border-foreground;
+  }
+  .brutal-shadow {
+    box-shadow: var(--shadow-brutal);
+  }
+  .brutal-shadow-sm {
+    box-shadow: var(--shadow-brutal-sm);
+  }
+  .brutal-shadow-lg {
+    box-shadow: var(--shadow-brutal-lg);
+  }
+  .brutal-press {
+    @apply transition-all duration-100;
+  }
+  .brutal-press:hover {
+    transform: translate(4px, 4px);
+    box-shadow: 4px 4px 0 hsl(var(--brainy-ink));
+  }
+  .brutal-press:active {
+    transform: translate(8px, 8px);
+    box-shadow: 0 0 0 hsl(var(--brainy-ink));
+  }
+}

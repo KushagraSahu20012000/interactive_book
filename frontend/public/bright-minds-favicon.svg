@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Bright Minds favicon">
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#FFF7CC" stroke="#1A1A1A" stroke-width="4"/>
+  <circle cx="23" cy="24" r="10" fill="#FF6FB5" stroke="#1A1A1A" stroke-width="3"/>
+  <circle cx="41" cy="24" r="10" fill="#5ED4FF" stroke="#1A1A1A" stroke-width="3"/>
+  <path d="M18 42C21 35 28 31 32 31C36 31 43 35 46 42" fill="none" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round"/>
+  <text x="32" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#1A1A1A">BM</text>
+</svg>

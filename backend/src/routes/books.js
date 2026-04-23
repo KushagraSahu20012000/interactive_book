@@ -1,0 +1,299 @@
+import { Router } from "express";
+import { Book } from "../models/Book.js";
+import { Page } from "../models/Page.js";
+import { GenerationTask } from "../models/GenerationTask.js";
+import { submitCreateBookJob, submitNextPageJob } from "../services/aiClient.js";
+import { monitorTaskLoop } from "../services/taskMonitor.js";
+
+export function createBooksRouter(io) {
+  const router = Router();
+  const validAgeGroups = new Set(["5-10", "10-15", "15-20", "20+"]);
+  const validNeurotypes = new Set(["ADHD", "Dyslexia", "Autism", "None"]);
+  const validLanguages = new Set(["English", "Hindi"]);
+
+  router.get("/", async (_req, res, next) => {
+    try {
+      const books = await Book.find()
+        .sort({ createdAt: -1 })
+        .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt")
+        .lean();
+      return res.json({ books });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.post("/", async (req, res, next) => {
+    try {
+      const {
+        topic,
+        description = "",
+        ageGroup: rawAgeGroup = "15-20",
+        neurotype: rawNeurotype = "None",
+        language: rawLanguage = "English"
+      } = req.body;
+
+      if (!topic || typeof topic !== "string") {
+        return res.status(400).json({ message: "topic is required" });
+      }
+
+      const normalizedTopic = topic.trim();
+      const normalizedDescription = typeof description === "string" ? description.trim() : "";
+      const ageGroup = validAgeGroups.has(rawAgeGroup) ? rawAgeGroup : "15-20";
+      const neurotype = validNeurotypes.has(rawNeurotype) ? rawNeurotype : "None";
+      const language = validLanguages.has(rawLanguage) ? rawLanguage : "English";
+
+      if (!normalizedTopic) {
+        return res.status(400).json({ message: "topic is required" });
+      }
+
+      const book = await Book.create({
+        topic: normalizedTopic,
+        description: normalizedDescription,
+        ageGroup,
+        neurotype,
+        language,
+        title: "Generating...",
+        status: "queued"
+      });
+
+      const page = await Page.create({
+        bookId: book._id,
+        pageNumber: 1,
+        status: "queued"
+      });
+
+      const ai = await submitCreateBookJob({
+        topic: normalizedTopic,
+        description: normalizedDescription,
+        age_group: ageGroup,
+        neurotype,
+        language,
+        memory_key: String(book._id),
+        page_number: 1
+      });
+
+      const task = await GenerationTask.create({
+        bookId: book._id,
+        pageId: page._id,
+        taskType: "create_book",
+        aiJobId: ai.job_id,
+        status: "queued"
+      });
+
+      page.aiJobId = ai.job_id;
+      await page.save();
+
+      monitorTaskLoop(String(task._id), io).catch((error) => console.error("Monitor loop error", error));
+
+      return res.status(201).json({
+        bookId: String(book._id),
+        pageId: String(page._id),
+        aiJobId: ai.job_id
+      });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get("/:bookId", async (req, res, next) => {
+    try {
+      const book = await Book.findById(req.params.bookId).lean();
+      if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      const pageNumber = Number(req.query.pageNumber || book.currentPageNumber || 1);
+      const page = await Page.findOne({ bookId: book._id, pageNumber }).lean();
+
+      return res.json({
+        book,
+        page: page || null
+      });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.post("/:bookId/next", async (req, res, next) => {
+    try {
+      const book = await Book.findById(req.params.bookId);
+      if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      const fromPageNumber = Number(req.body?.fromPageNumber) || 0;
+      const latestPage = await Page.findOne({ bookId: book._id }).sort({ pageNumber: -1 });
+
+      let nextPageNumber;
+      if (fromPageNumber > 0) {
+        nextPageNumber = fromPageNumber + 1;
+      } else if (latestPage && (latestPage.status === "queued" || latestPage.status === "text_ready")) {
+        return res.status(200).json({
+          pageId: String(latestPage._id),
+          pageNumber: latestPage.pageNumber,
+          aiJobId: latestPage.aiJobId,
+          reused: true
+        });
+      } else {
+        const basePage = latestPage?.pageNumber || Math.max(book.currentPageNumber || 0, 1);
+        nextPageNumber = basePage + 1;
+      }
+
+      const existing = await Page.findOne({ bookId: book._id, pageNumber: nextPageNumber });
+      if (existing) {
+        return res.status(200).json({
+          pageId: String(existing._id),
+          pageNumber: existing.pageNumber,
+          aiJobId: existing.aiJobId,
+          reused: true
+        });
+      }
+
+      if (nextPageNumber > 10) {
+        return res.status(400).json({ message: "Maximum page limit reached (10 pages)." });
+      }
+
+      const page = await Page.create({
+        bookId: book._id,
+        pageNumber: nextPageNumber,
+        status: "queued"
+      });
+
+      const ai = await submitNextPageJob({
+        topic: book.topic,
+        description: book.description,
+        age_group: book.ageGroup,
+        neurotype: book.neurotype,
+        language: book.language || "English",
+        memory_key: String(book._id),
+        page_number: nextPageNumber
+      });
+
+      const task = await GenerationTask.create({
+        bookId: book._id,
+        pageId: page._id,
+        taskType: "next_page",
+        aiJobId: ai.job_id,
+        status: "queued"
+      });
+
+      page.aiJobId = ai.job_id;
+      await page.save();
+
+      monitorTaskLoop(String(task._id), io).catch((error) => console.error("Monitor loop error", error));
+
+      return res.status(201).json({
+        pageId: String(page._id),
+        pageNumber: nextPageNumber,
+        aiJobId: ai.job_id,
+        reused: false
+      });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get("/:bookId/pages/:pageNumber/audio", async (req, res, next) => {
+    try {
+      const book = await Book.findById(req.params.bookId).lean();
+      if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      const pageNumber = Number(req.params.pageNumber);
+      const page = await Page.findOne({ bookId: book._id, pageNumber }).lean();
+      if (!page) {
+        return res.status(404).json({ message: "Page not found" });
+      }
+
+      const sections = (page.sections || [])
+        .slice()
+        .sort((a, b) => (a.position || 0) - (b.position || 0))
+        .map((section) => (section?.text || "").trim())
+        .filter(Boolean);
+
+      const actionItem = (page.actionItem || "").trim();
+
+      if (sections.length === 0 && !actionItem) {
+        return res.status(409).json({ message: "Page has no text yet" });
+      }
+
+      const pageTitle = (page.title || "").trim() || `Page ${pageNumber}`;
+      const actionItemText = actionItem ? `Action item. ${actionItem}` : "";
+      const aggregated = `${pageTitle}. ${sections.join(" ")} ${actionItemText}`.trim();
+      const language = book.language === "Hindi" ? "Hindi" : "English";
+      const ttsPayload =
+        language === "Hindi"
+          ? {
+              text: aggregated,
+              voice: "lulwa",
+              model: "canopylabs/orpheus-arabic-saudi"
+            }
+          : {
+              text: aggregated,
+              voice: "autumn",
+              model: process.env.GROQ_TTS_MODEL || "canopylabs/orpheus-v1-english"
+            };
+      const aiBaseUrl = process.env.AI_LAYER_URL || "http://localhost:8000";
+      const aiResponse = await fetch(`${aiBaseUrl}/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ttsPayload)
+      });
+
+      if (!aiResponse.ok) {
+        const detail = await aiResponse.text();
+        return res.status(502).json({ message: "TTS upstream failed", detail });
+      }
+
+      const arrayBuffer = await aiResponse.arrayBuffer();
+      res.setHeader("Content-Type", "audio/wav");
+      res.setHeader("Cache-Control", "no-store");
+      return res.send(Buffer.from(arrayBuffer));
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get("/:bookId/pages", async (req, res, next) => {
+    try {
+      const pages = await Page.find({ bookId: req.params.bookId }).sort({ pageNumber: 1 }).lean();
+      return res.json({ pages });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get("/:bookId/progress", async (req, res, next) => {
+    try {
+      const tasks = await GenerationTask.find({ bookId: req.params.bookId }).sort({ createdAt: -1 }).lean();
+
+      return res.json({ tasks });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.delete("/:bookId", async (req, res, next) => {
+    try {
+      const book = await Book.findById(req.params.bookId);
+      if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      await Promise.all([
+        GenerationTask.deleteMany({ bookId: book._id }),
+        Page.deleteMany({ bookId: book._id }),
+        Book.deleteOne({ _id: book._id })
+      ]);
+
+      io.emit("book:deleted", { bookId: String(book._id) });
+      return res.json({ deleted: true, bookId: String(book._id) });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  return router;
+}
