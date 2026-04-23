@@ -182,18 +182,19 @@ const Books = () => {
                               <img
                                 src={book.coverImageUrl}
                                 alt={`${book.title} cover`}
-                                className="absolute inset-0 w-full h-full object-cover opacity-30"
+                                className="absolute inset-0 w-full h-full object-cover"
                                 loading="lazy"
                                 referrerPolicy="no-referrer"
                               />
                             ) : null}
-                            <div>
-                              <p className="font-display uppercase text-xs mb-2">{book.status}</p>
-                              <h3 className="font-display text-xl sm:text-2xl uppercase leading-tight mb-2">{book.title}</h3>
-                              <p className="font-body font-bold text-sm">Topic: {book.topic}</p>
+                            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-white/85 via-white/35 to-transparent" />
+                            <div className="relative z-10">
+                              <p className="font-display uppercase text-xs mb-2 text-foreground">{book.status}</p>
+                              <h3 className="font-display text-xl sm:text-2xl uppercase leading-tight mb-2 text-black [text-shadow:2px_2px_0_rgba(255,255,255,0.95)]">{book.title}</h3>
+                              <p className="font-body font-bold text-sm text-black">Topic: {book.topic}</p>
                             </div>
 
-                            <div className="text-sm font-bold">
+                            <div className="relative z-10 text-sm font-bold">
                               <p>Age: {book.ageGroup}</p>
                               <p>Neurotype: {book.neurotype}</p>
                               <p>Language: {book.language || "English"}</p>

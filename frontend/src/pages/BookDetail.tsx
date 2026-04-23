@@ -52,6 +52,43 @@ type BookData = {
 const sectionColors = ["bg-brainy-yellow", "bg-brainy-sky", "bg-brainy-lime"];
 const textColors = ["text-[#ff0f7b]", "text-[#ff5a1f]", "text-[#5b2ca0]"];
 const MAX_PAGE_LIMIT_MESSAGE = "Maximum page limit reached (10 pages).";
+const TTS_LIMIT_MESSAGE = "Free Tier Expired. Request Upgrade!";
+
+const normalizeAudioError = (raw: string, status?: number) => {
+  const text = String(raw || "").trim();
+  if (!text) {
+    return `Audio request failed${status ? ` (${status})` : ""}`;
+  }
+
+  let message = text;
+  let detail = "";
+
+  try {
+    const parsed = JSON.parse(text) as { message?: string; detail?: string };
+    message = String(parsed.message || message);
+    detail = String(parsed.detail || "");
+  } catch {
+    // Keep original text when response is not JSON.
+  }
+
+  const lowered = `${message} ${detail}`.toLowerCase();
+  const isRateLimited =
+    status === 429 ||
+    lowered.includes("rate limit") ||
+    lowered.includes("rate_limit_exceeded") ||
+    lowered.includes("tokens per day") ||
+    lowered.includes("free tier");
+
+  if (isRateLimited) {
+    return TTS_LIMIT_MESSAGE;
+  }
+
+  if (message.startsWith("{")) {
+    return `Audio request failed${status ? ` (${status})` : ""}`;
+  }
+
+  return message;
+};
 
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -219,8 +256,9 @@ const BookDetail = () => {
       const audioUrl = `${getPageAudioUrl(id, pageNumber)}?ts=${Date.now()}`;
       const response = await fetch(audioUrl);
       if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || `Audio request failed (${response.status})`);
+        const body = await response.text();
+        const normalizedMessage = normalizeAudioError(body, response.status);
+        throw new Error(normalizedMessage);
       }
 
       const contentType = response.headers.get("content-type") || "";
