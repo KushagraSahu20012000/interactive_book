@@ -21,27 +21,5 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     chunkSizeWarningLimit: 1200,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-
-          // Keep only actual React runtime packages in the React vendor chunk.
-          if (/node_modules\/(react|react-dom|scheduler|use-sync-external-store)\//.test(id)) {
-            return "vendor-react";
-          }
-
-          if (id.includes("@tanstack")) {
-            return "vendor-query";
-          }
-
-          if (id.includes("@radix-ui") || id.includes("class-variance-authority") || id.includes("tailwind-merge")) {
-            return "vendor-ui";
-          }
-
-          return "vendor";
-        },
-      },
-    },
   },
 }));
