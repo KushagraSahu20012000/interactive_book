@@ -1,6 +1,6 @@
 ---
 title: Bright Minds Backend
-emoji: rocket
+emoji: 🚀
 colorFrom: blue
 colorTo: indigo
 sdk: docker

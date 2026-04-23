@@ -1,6 +1,6 @@
 ---
 title: Bright Minds AI
-emoji: brain
+emoji: 🧠
 colorFrom: yellow
 colorTo: green
 sdk: docker
