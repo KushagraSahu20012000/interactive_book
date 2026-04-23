@@ -71,16 +71,23 @@ jobs:
             --exclude ".env" \
             "$GITHUB_WORKSPACE/backend/" "$WORKDIR/"
 
-          if [ -d "$GITHUB_WORKSPACE/Assets" ]; then
-            mkdir -p "$WORKDIR/Assets"
+          ASSETS_SUBDIR="Assets/sample books/environment - 5-10"
+          if [ -d "$GITHUB_WORKSPACE/$ASSETS_SUBDIR" ]; then
+            rm -rf "$WORKDIR/Assets"
+            mkdir -p "$WORKDIR/$ASSETS_SUBDIR"
             rsync -av --delete \
               --exclude ".git" \
-              "$GITHUB_WORKSPACE/Assets/" "$WORKDIR/Assets/"
+              "$GITHUB_WORKSPACE/$ASSETS_SUBDIR/" "$WORKDIR/$ASSETS_SUBDIR/"
           else
             rm -rf "$WORKDIR/Assets"
           fi
 
           cd "$WORKDIR"
+
+          git lfs track "*.png" "*.jpg" "*.jpeg" "*.webp" "*.gif" "*.mp3" "*.wav" "*.bin" || true
+          git add .gitattributes || true
+          git add --renormalize . || true
+
           if [ -n "$(git status --porcelain)" ]; then
             git add -A
             git commit -m "Deploy backend from GitHub Actions (${GITHUB_SHA})"
