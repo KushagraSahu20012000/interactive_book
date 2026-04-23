@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import logging
 from typing import Any, TypedDict
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -13,12 +13,16 @@ from .config import (
     DEFAULT_GROQ_MODEL,
     DEFAULT_LANGUAGE,
     DEFAULT_NEUROTYPE,
+    get_env,
     HINDI_STYLE_INSTRUCTION,
     VALID_AGE_GROUPS,
     VALID_LANGUAGES,
     VALID_NEUROTYPES,
 )
 from .schemas import BookInitOutput
+
+
+logger = logging.getLogger(__name__)
 
 
 ERROR_FALLBACK_TEXT = "Free Tier Expired. Request Upgrade!"
@@ -56,7 +60,7 @@ class BookInitState(TypedDict, total=False):
 class BookInitAI:
     def __init__(self) -> None:
         self.model_name = DEFAULT_GROQ_MODEL
-        self.groq_api_key = os.getenv("GROQ_API_KEY", "")
+        self.groq_api_key = get_env("GROQ_API_KEY")
         self.prompt = ChatPromptTemplate.from_template(BOOK_INIT_PROMPT)
 
         self.llm = ChatGroq(model=self.model_name, api_key=self.groq_api_key, temperature=0.6) if self.groq_api_key else None
@@ -124,4 +128,5 @@ class BookInitAI:
                 return self._fallback_output(self._normalize_inputs(payload))
             return result
         except Exception:  # noqa: BLE001
+            logger.exception("Book init generation failed", extra={"model": self.model_name})
             return self._error_fallback_output()

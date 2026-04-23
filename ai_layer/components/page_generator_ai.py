@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import os
+import logging
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -16,6 +16,7 @@ from .config import (
     DEFAULT_GROQ_MODEL,
     DEFAULT_LANGUAGE,
     DEFAULT_NEUROTYPE,
+    get_env,
     HINDI_STYLE_INSTRUCTION,
     PAGE_MEMORY_LIMIT,
     VALID_AGE_GROUPS,
@@ -26,6 +27,9 @@ from .schemas import PageGenerationOutput, PageSectionDraft
 
 
 ERROR_FALLBACK_TEXT = "Free Tier Expired. Request Upgrade!"
+
+
+logger = logging.getLogger(__name__)
 
 # ── Few-shot examples loaded from JSON ───────────────────────────────────────
 _FEW_SHOTS_PATH = Path(__file__).parent / "few_shots.json"
@@ -291,7 +295,7 @@ class PageState(TypedDict, total=False):
 class PageGeneratorAI:
     def __init__(self) -> None:
         self.model_name = DEFAULT_GROQ_MODEL
-        self.groq_api_key = os.getenv("GROQ_API_KEY", "")
+        self.groq_api_key = get_env("GROQ_API_KEY")
         self.memory_limit = PAGE_MEMORY_LIMIT
         self.memory_store: dict[str, list[dict[str, Any]]] = {}
 
@@ -471,6 +475,10 @@ class PageGeneratorAI:
             self._remember_page(normalized, result)
             return result
         except Exception:  # noqa: BLE001
+            logger.exception(
+                "Page generation failed",
+                extra={"model": self.model_name, "page_number": normalized["page_number"], "age_group": normalized["age_group"]},
+            )
             result = self._error_fallback_output(normalized)
             self._remember_page(normalized, result)
             return result

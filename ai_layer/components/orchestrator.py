@@ -17,6 +17,8 @@ from .config import (
     DEFAULT_AGE_GROUP,
     DEFAULT_LANGUAGE,
     DEFAULT_NEUROTYPE,
+    DEFAULT_GROQ_MODEL,
+    get_env,
     TTS_DEFAULT_LANGUAGE,
     TTS_ENGLISH_MODEL,
     TTS_ENGLISH_VOICE,
@@ -127,7 +129,7 @@ class TTSRequest(BaseModel):
 
 
 def _synthesize_speech(text: str, language: str = TTS_DEFAULT_LANGUAGE, voice: Optional[str] = None, model: Optional[str] = None) -> bytes:
-    api_key = os.getenv("GROQ_API_KEY", "")
+    api_key = get_env("GROQ_API_KEY")
     if not api_key:
         raise HTTPException(status_code=503, detail="GROQ_API_KEY not configured")
 
@@ -440,6 +442,10 @@ def create_app() -> FastAPI:
             "status": "ok",
             "jobs": len(orchestrator.jobs),
             "future_agent_enabled": orchestrator.future_agent is not None,
+            "groq_configured": bool(get_env("GROQ_API_KEY")),
+            "groq_model": DEFAULT_GROQ_MODEL,
+            "image_source": orchestrator.image_ai.image_source,
+            "hf_image_configured": orchestrator.image_ai.hf_client is not None,
         }
 
     @app.post("/jobs/create-book")

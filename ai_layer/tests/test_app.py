@@ -2,10 +2,22 @@ import asyncio
 from contextlib import suppress
 
 from components.book_init_ai import BookInitAI
+from components.config import get_env, sanitize_env_value
 from components.orchestrator import CreateBookRequest, NextPageRequest, Orchestrator
 from components.image_generator_ai import ImageGeneratorAI
 from components.page_generator_ai import PageGeneratorAI
 from components.schemas import PageGenerationOutput, PageSectionDraft
+
+
+def test_sanitize_env_value_strips_quotes_and_whitespace():
+    assert sanitize_env_value('  "abc123"  ') == "abc123"
+    assert sanitize_env_value("  'quoted-value'  ") == "quoted-value"
+    assert sanitize_env_value("   ", "fallback") == "fallback"
+
+
+def test_get_env_strips_quoted_environment_values(monkeypatch):
+    monkeypatch.setenv("GROQ_MODEL", '  "openai/gpt-oss-120b"  ')
+    assert get_env("GROQ_MODEL") == "openai/gpt-oss-120b"
 
 
 def test_page_generator_fallback_shape():
@@ -72,6 +84,7 @@ def test_orchestrator_next_page_flow_with_mocks(monkeypatch):
     async def fake_generate_page(_):
         return PageGenerationOutput(
             title="Fraction Steps",
+            action_item="Split one whole into equal parts.",
             sections=[
                 PageSectionDraft(position=1, text="One whole can be split.", image_prompt="student holding full pizza"),
                 PageSectionDraft(position=2, text="Two halves make one whole.", image_prompt="pizza cut into two halves"),
@@ -125,6 +138,7 @@ def test_orchestrator_create_book_flow_with_mocks(monkeypatch):
     async def fake_generate_page(_):
         return PageGenerationOutput(
             title="Fraction Starter",
+            action_item="Show one everyday example of equal parts.",
             sections=[
                 PageSectionDraft(position=1, text="Start with one whole.", image_prompt="full pizza on table"),
                 PageSectionDraft(position=2, text="Split into equal parts.", image_prompt="pizza sliced evenly"),

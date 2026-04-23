@@ -11,20 +11,22 @@ import numpy as np
 from huggingface_hub import InferenceClient
 from PIL import Image, ImageDraw
 
+from .config import get_env
+
 
 class ImageGeneratorAI:
     """Shared image generation service used by page and book workers."""
 
     def __init__(self) -> None:
-        hold_images = os.getenv("HOLD_IMAGE_GENERATION", "false").strip().lower()
+        hold_images = get_env("HOLD_IMAGE_GENERATION", "false").lower()
         self.hold_image_generation = hold_images in {"1", "true", "yes", "on"}
 
-        self.image_source = os.getenv("IMAGE_SOURCE", "pexels").strip().lower()
-        self.pexels_api_key = os.getenv("PEXELS_API_KEY", "")
+        self.image_source = get_env("IMAGE_SOURCE", "pexels").lower()
+        self.pexels_api_key = get_env("PEXELS_API_KEY")
 
-        hf_api_key = os.getenv("HF_TOKEN") or os.getenv("HF_API_KEY", "")
-        self.hf_provider = os.getenv("HF_PROVIDER", "nscale")
-        self.hf_model = os.getenv("HF_IMAGE_MODEL", "stabilityai/stable-diffusion-xl-base-1.0")
+        hf_api_key = get_env("HF_TOKEN") or get_env("HF_API_KEY")
+        self.hf_provider = get_env("HF_PROVIDER", "nscale")
+        self.hf_model = get_env("HF_IMAGE_MODEL", "stabilityai/stable-diffusion-xl-base-1.0")
         self.hf_client = InferenceClient(provider=self.hf_provider, api_key=hf_api_key) if hf_api_key else None
 
     async def generate_payload(

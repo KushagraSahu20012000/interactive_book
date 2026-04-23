@@ -57,18 +57,17 @@ const Books = () => {
   const sampleBooks = useMemo(() => books.filter((book) => book.isSample), [books]);
   const generatedBooks = useMemo(() => books.filter((book) => !book.isSample), [books]);
 
-  const refresh = async () => {
+  const refresh = async (isUserAuthenticated = authenticated) => {
     const response = await listBooks();
-    setBooks(response.books as BookSummary[]);
+    const visibleBooks = isUserAuthenticated
+      ? (response.books as BookSummary[])
+      : (response.books as BookSummary[]).filter((book) => book.isSample);
+    setBooks(visibleBooks);
   };
 
   useEffect(() => {
-    if (!authenticated) {
-      setLoading(false);
-      return;
-    }
-
-    refresh()
+    setLoading(true);
+    refresh(authenticated)
       .catch((loadError) => setError(String(loadError.message || loadError)))
       .finally(() => setLoading(false));
   }, [authenticated]);
@@ -192,7 +191,7 @@ const Books = () => {
           <DialogHeader>
             <DialogTitle className="font-display uppercase text-2xl">Login to Continue</DialogTitle>
             <DialogDescription className="font-bold text-foreground">
-              Sign in or create your account to access Books.
+              Sign in or create your account to make books. You can close this to browse creator samples.
             </DialogDescription>
           </DialogHeader>
 
@@ -327,7 +326,14 @@ const Books = () => {
             </div>
             <button
               type="button"
-              onClick={() => setShowCreate(true)}
+              onClick={() => {
+                if (!authenticated) {
+                  setAuthMode("register");
+                  setShowAuthModal(true);
+                  return;
+                }
+                setShowCreate(true);
+              }}
               className="bg-brainy-sky brutal-border brutal-shadow-sm brutal-press px-4 py-2 font-display uppercase text-sm flex items-center gap-2"
             >
               <span className="inline-flex items-center justify-center w-5 h-5 bg-card brutal-border text-[10px]">+</span>
@@ -388,7 +394,14 @@ const Books = () => {
                   {generatedBooks.map((book, i) => (
                     <div key={book._id} className="relative">
                       <button
-                        onClick={() => navigate(`/books/${book._id}?page=1`)}
+                        onClick={() => {
+                          if (!authenticated) {
+                            setAuthMode("login");
+                            setShowAuthModal(true);
+                            return;
+                          }
+                          navigate(`/books/${book._id}?page=1`);
+                        }}
                         className={`${rotations[i % rotations.length]} brutal-press text-left w-full`}
                       >
                         <div className="bg-brainy-yellow brutal-border brutal-shadow overflow-hidden">

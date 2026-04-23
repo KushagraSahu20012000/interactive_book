@@ -116,26 +116,32 @@ const BookDetail = () => {
 
   const load = async () => {
     if (!id) {
-      return;
+      return null;
     }
 
     const response = await getBookPage(id, pageNumber);
-    setBook(response.book as BookData);
+    const nextBook = response.book as BookData;
+    setBook(nextBook);
     setPage((response.page || null) as PageData | null);
+    return nextBook;
   };
 
   useEffect(() => {
-    if (!hasAuthSession()) {
-      navigate("/books");
-      return;
-    }
-
     if (!id) {
       return;
     }
 
     setLoading(true);
     load()
+      .then((loadedBook) => {
+        if (!loadedBook) {
+          return;
+        }
+
+        if (!hasAuthSession() && !loadedBook.isSample) {
+          navigate("/books");
+        }
+      })
       .catch((loadError) => setError(String(loadError.message || loadError)))
       .finally(() => setLoading(false));
   }, [id, pageNumber, navigate]);
