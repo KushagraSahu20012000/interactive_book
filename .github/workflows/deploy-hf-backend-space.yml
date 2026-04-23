@@ -65,6 +65,9 @@ jobs:
 
           mkdir -p "$WORKDIR/Assets/sample books"
           rsync -av --delete \
+            --include "*/" \
+            --include "section_text.txt" \
+            --exclude "*" \
             "$GITHUB_WORKSPACE/Assets/sample books/environment - 5-10/" \
             "$WORKDIR/Assets/sample books/environment - 5-10/"
 
