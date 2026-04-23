@@ -26,7 +26,8 @@ export default defineConfig(({ mode }) => ({
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
 
-          if (id.includes("react") || id.includes("scheduler")) {
+          // Keep only actual React runtime packages in the React vendor chunk.
+          if (/node_modules\/(react|react-dom|scheduler|use-sync-external-store)\//.test(id)) {
             return "vendor-react";
           }
 
