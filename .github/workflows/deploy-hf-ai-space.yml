@@ -1,0 +1,61 @@
+name: Deploy AI Space
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ai_layer/**"
+      - ".github/workflows/deploy-hf-ai-space.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
+      - name: Deploy ai_layer to HF Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: kush20sahu
+          HF_SPACE: bright-minds-ai
+        run: |
+          set -euo pipefail
+
+          if [ -z "${HF_TOKEN:-}" ]; then
+            echo "HF_TOKEN secret is not set"
+            exit 1
+          fi
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          WORKDIR="$(mktemp -d)"
+          REPO_URL="https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}"
+
+          git clone "$REPO_URL" "$WORKDIR"
+
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude "__pycache__" \
+            --exclude "*.pyc" \
+            --exclude ".env" \
+            --exclude ".venv" \
+            "$GITHUB_WORKSPACE/ai_layer/" "$WORKDIR/"
+
+          cd "$WORKDIR"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "Deploy ai_layer from GitHub Actions (${GITHUB_SHA})"
+            git push origin main
+          else
+            echo "No ai_layer changes to deploy"
+          fi
