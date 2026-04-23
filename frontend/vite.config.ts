@@ -19,4 +19,28 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+
+          if (id.includes("react") || id.includes("scheduler")) {
+            return "vendor-react";
+          }
+
+          if (id.includes("@tanstack")) {
+            return "vendor-query";
+          }
+
+          if (id.includes("@radix-ui") || id.includes("class-variance-authority") || id.includes("tailwind-merge")) {
+            return "vendor-ui";
+          }
+
+          return "vendor";
+        },
+      },
+    },
+  },
 }));
