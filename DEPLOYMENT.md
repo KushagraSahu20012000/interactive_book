@@ -28,7 +28,7 @@ Why this is the best fit:
 - `render.yaml`: one-click style Render blueprint for frontend, backend, AI layer
 - `.gitignore`: prevents accidental secret commits (`.env`, `.env.*`)
 
-## Deploy Steps 
+## Deploy Steps
 
 ### 1. Prepare MongoDB Atlas
 
