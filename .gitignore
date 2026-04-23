@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+prompt.py
+main.py
 
 # Local virtual environments
 .venv/

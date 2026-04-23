@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: interactive-book-backend
+    name: bright-minds-backend
     env: node
     rootDir: backend
     plan: free
@@ -15,14 +15,14 @@ services:
       - key: MONGO_URI
         sync: false
       - key: AI_LAYER_URL
-        value: https://interactive-book-ai.onrender.com
+        value: https://bright-minds-ai.onrender.com
       - key: CLIENT_ORIGIN
-        value: https://interactive-book-frontend.onrender.com
+        value: https://bright-minds-frontend.onrender.com
       - key: AI_POLL_INTERVAL_MS
         value: 1500
 
   - type: web
-    name: interactive-book-ai
+    name: bright-minds-ai
     env: python
     rootDir: ai_layer
     plan: free
@@ -54,7 +54,7 @@ services:
         sync: false
 
   - type: web
-    name: interactive-book-frontend
+    name: bright-minds-frontend
     env: static
     rootDir: frontend
     plan: free
@@ -62,4 +62,4 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_BACKEND_URL
-        value: https://interactive-book-backend.onrender.com
+        value: https://bright-minds-backend.onrender.com

@@ -73,6 +73,30 @@ Frontend:
 - AI Layer: `/health`
 - Frontend loads and can create books
 
+## Post-Push Fast Path (Now)
+
+You already pushed code to GitHub. Do this next in Render:
+
+1. Render Dashboard -> New -> Blueprint.
+2. Select your repository and branch `main`.
+3. Confirm 3 services are detected from `render.yaml`:
+  - `bright-minds-frontend`
+  - `bright-minds-backend`
+  - `bright-minds-ai`
+4. Add required secret env vars before first deploy:
+  - Backend: `MONGO_URI`
+  - AI: `GROQ_API_KEY`, and either `HF_TOKEN` or `HF_API_KEY`
+  - Optional AI (if using stock source): `PEXELS_API_KEY`
+5. Click Deploy.
+
+After first deploy, verify and adjust these URLs if your Render service URLs differ from defaults:
+
+- Backend `AI_LAYER_URL` -> `https://bright-minds-ai.onrender.com`
+- Backend `CLIENT_ORIGIN` -> `https://bright-minds-frontend.onrender.com`
+- Frontend `VITE_BACKEND_URL` -> `https://bright-minds-backend.onrender.com`
+
+If Render assigns different domains, replace values accordingly and redeploy affected services.
+
 ## Post-Deployment Checklist
 
 - Verify Create Book flow (English and Hindi)
