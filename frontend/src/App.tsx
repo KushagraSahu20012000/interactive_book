@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Books from "./pages/Books";
@@ -25,19 +26,21 @@ const RoutedApp = () => (
 );
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      {googleClientId ? (
-        <GoogleOAuthProvider clientId={googleClientId}>
+  <AppErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        {googleClientId ? (
+          <GoogleOAuthProvider clientId={googleClientId}>
+            <RoutedApp />
+          </GoogleOAuthProvider>
+        ) : (
           <RoutedApp />
-        </GoogleOAuthProvider>
-      ) : (
-        <RoutedApp />
-      )}
-    </TooltipProvider>
-  </QueryClientProvider>
+        )}
+      </TooltipProvider>
+    </QueryClientProvider>
+  </AppErrorBoundary>
 );
 
 export default App;
