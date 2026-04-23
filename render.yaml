@@ -3,7 +3,7 @@ services:
     name: bright-minds-backend
     env: node
     rootDir: backend
-    plan: free
+    plan: starter
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /health
@@ -25,7 +25,7 @@ services:
     name: bright-minds-ai
     env: python
     rootDir: ai_layer
-    plan: free
+    plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: bash start_ai_layer.sh
     healthCheckPath: /health
@@ -57,7 +57,6 @@ services:
     name: bright-minds-frontend
     env: static
     rootDir: frontend
-    plan: free
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
     envVars:
