@@ -362,7 +362,7 @@ const Books = () => {
           <div className="space-y-10">
             {sampleBooks.length > 0 ? (
               <div>
-                <h2 className="font-display uppercase text-2xl sm:text-3xl mb-4">Creator Samples</h2>
+                <h2 className="font-display uppercase text-2xl sm:text-3xl mb-4">Creator Samples - (More books Incoming)</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {sampleBooks.map((book, i) => (
                     <div key={book._id} className="relative w-full max-w-[280px] mx-auto sm:max-w-none">

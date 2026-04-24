@@ -11,14 +11,12 @@ fi
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8000}"
 
-# Load local environment variables for AI providers.
+# Load local environment variables for AI providers when a real .env is present.
+# Do NOT source .env.example at runtime because placeholder values can override
+# provider secrets injected by deployment platforms (for example HF Spaces).
 if [[ -f "$SCRIPT_DIR/.env" ]]; then
 	set -a
 	source "$SCRIPT_DIR/.env"
-	set +a
-elif [[ -f "$SCRIPT_DIR/.env.example" ]]; then
-	set -a
-	source "$SCRIPT_DIR/.env.example"
 	set +a
 fi
 

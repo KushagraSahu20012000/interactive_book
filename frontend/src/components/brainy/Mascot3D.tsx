@@ -339,28 +339,58 @@ export const Mascot3D = () => {
   const { muted, play } = useUiSound();
 
   return (
-    <div className="w-full h-full">
-      <Canvas shadows camera={{ position: [0, 0.25, 4.8], fov: 45 }} dpr={[1, 2]}>
-        <color attach="background" args={["#a3e635"]} />
-        <ambientLight intensity={0.85} />
-        <directionalLight position={[5, 5, 5]} intensity={1.35} castShadow />
-        <directionalLight position={[-3, 2, -2]} intensity={0.55} color="#ff3d8a" />
-        <pointLight position={[0, 1.6, 2.4]} intensity={0.85} color="#ffffff" />
-        <Suspense fallback={null}>
-          <Robot muted={muted} onSpin={() => play("mascot")} />
-        </Suspense>
-        <OrbitControls
-          enablePan={false}
-          enableZoom={false}
-          enableDamping
-          dampingFactor={0.08}
-          autoRotate
-          autoRotateSpeed={0.8}
-          rotateSpeed={0.85}
-          minPolarAngle={Math.PI / 2.5}
-          maxPolarAngle={Math.PI / 1.8}
-        />
-      </Canvas>
+    <div className="relative w-full h-full overflow-hidden bg-[#a3e635]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 20% 18%, rgba(255,255,255,0.24) 0, rgba(255,255,255,0) 26%), radial-gradient(circle at 82% 24%, rgba(255,61,138,0.14) 0, rgba(255,61,138,0) 22%), radial-gradient(circle at 50% 78%, rgba(92,196,255,0.16) 0, rgba(92,196,255,0) 28%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(126,168,41,0.12) 100%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-55"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 2px 2px, rgba(17,24,39,0.24) 1.6px, transparent 1.7px)",
+          backgroundSize: "22px 22px",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-25"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(17,24,39,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(17,24,39,0.18) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
+      <div className="pointer-events-none absolute -left-10 top-8 h-24 w-24 rotate-6 brutal-border bg-white/20 brutal-shadow-sm" />
+      <div className="pointer-events-none absolute bottom-8 right-10 h-16 w-32 -rotate-6 brutal-border bg-brainy-yellow/30 brutal-shadow-sm" />
+
+      <div className="relative z-10 w-full h-full">
+        <Canvas shadows camera={{ position: [0, 0.25, 4.8], fov: 45 }} dpr={[1, 2]} gl={{ alpha: true, antialias: true }}>
+          <ambientLight intensity={0.85} />
+          <directionalLight position={[5, 5, 5]} intensity={1.35} castShadow />
+          <directionalLight position={[-3, 2, -2]} intensity={0.55} color="#ff3d8a" />
+          <pointLight position={[0, 1.6, 2.4]} intensity={0.85} color="#ffffff" />
+          <Suspense fallback={null}>
+            <Robot muted={muted} onSpin={() => play("mascot")} />
+          </Suspense>
+          <OrbitControls
+            enablePan={false}
+            enableZoom={false}
+            enableDamping
+            dampingFactor={0.08}
+            autoRotate
+            autoRotateSpeed={0.8}
+            rotateSpeed={0.85}
+            minPolarAngle={Math.PI / 2.5}
+            maxPolarAngle={Math.PI / 1.8}
+          />
+        </Canvas>
+      </div>
     </div>
   );
 };
