@@ -4,7 +4,7 @@ import { TopNav } from "@/components/brainy/TopNav";
 import { StickyFeedbackButtons } from "@/components/brainy/StickyFeedbackButtons";
 import { createBook, deleteBook, listBooks, loginUser, loginWithGoogle, registerUser } from "@/lib/api";
 import { Loader2, Trash2 } from "lucide-react";
-import { clearAuthSession, isAuthenticated as hasAuthSession, saveAuthSession } from "@/lib/auth";
+import { getOrCreateGuestKey, hasGuestSession, isAuthenticated as hasAuthSession, saveAuthSession, subscribeAuthStateChange } from "@/lib/auth";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 
@@ -28,7 +28,7 @@ const hasGoogleClientId = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 const Books = () => {
   const navigate = useNavigate();
   const [authenticated, setAuthenticated] = useState(hasAuthSession());
-  const [showAuthModal, setShowAuthModal] = useState(!hasAuthSession());
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("register");
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -59,7 +59,7 @@ const Books = () => {
 
   const refresh = async (isUserAuthenticated = authenticated) => {
     const response = await listBooks();
-    const visibleBooks = isUserAuthenticated
+    const visibleBooks = isUserAuthenticated || hasGuestSession()
       ? (response.books as BookSummary[])
       : (response.books as BookSummary[]).filter((book) => book.isSample);
     setBooks(visibleBooks);
@@ -71,6 +71,16 @@ const Books = () => {
       .catch((loadError) => setError(String(loadError.message || loadError)))
       .finally(() => setLoading(false));
   }, [authenticated]);
+
+  useEffect(() => subscribeAuthStateChange(() => setAuthenticated(hasAuthSession())), []);
+
+  const handleContinueAsGuest = async () => {
+    getOrCreateGuestKey();
+    setAuthError("");
+    setShowAuthModal(false);
+    await refresh(false);
+    setShowCreate(true);
+  };
 
   const completeAuth = (payload: { token: string; user: any }) => {
     saveAuthSession(payload.token, payload.user);
@@ -298,21 +308,22 @@ const Books = () => {
             )}
           </div>
 
-          {authError ? <p className="text-red-700 font-bold text-sm">{authError}</p> : null}
-          {authenticated ? (
+          {!authenticated ? (
             <button
               type="button"
-              data-sfx="destructive"
-              className="px-3 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-background"
+              data-sfx="nav"
+              className="w-full px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-background"
               onClick={() => {
-                clearAuthSession();
-                setAuthenticated(false);
-                setShowAuthModal(true);
+                handleContinueAsGuest().catch((guestError) => {
+                  setAuthError(String((guestError as Error).message || guestError));
+                });
               }}
             >
-              Logout
+              Join as Guest
             </button>
           ) : null}
+
+          {authError ? <p className="text-red-700 font-bold text-sm">{authError}</p> : null}
         </DialogContent>
       </Dialog>
 
@@ -333,7 +344,7 @@ const Books = () => {
               type="button"
               data-sfx="primary"
               onClick={() => {
-                if (!authenticated) {
+                if (!authenticated && !hasGuestSession()) {
                   setAuthMode("register");
                   setShowAuthModal(true);
                   return;

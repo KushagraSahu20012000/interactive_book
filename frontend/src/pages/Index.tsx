@@ -1,7 +1,15 @@
+import { lazy, Suspense, useEffect, useState } from "react";
 import { TopNav } from "@/components/brainy/TopNav";
-import { Mascot3D } from "@/components/brainy/Mascot3D";
 import { NavLink } from "@/components/NavLink";
+import { clearSession, hasActiveSession, subscribeAuthStateChange } from "@/lib/auth";
 import { Bot, Puzzle, Target, Brain, Lightbulb, BookOpen, Sparkles } from "lucide-react";
+
+const Mascot3D = lazy(() => import("@/components/brainy/Mascot3D").then((module) => ({ default: module.Mascot3D })));
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
 
 const features = [
   {
@@ -93,6 +101,28 @@ const topicTags = [
 ];
 
 const Index = () => {
+  const [hasSession, setHasSession] = useState(hasActiveSession());
+  const [showMascot, setShowMascot] = useState(false);
+
+  useEffect(() => subscribeAuthStateChange(() => setHasSession(hasActiveSession())), []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const idleWindow = window as IdleWindow;
+    const onIdle = () => setShowMascot(true);
+
+    if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(onIdle, { timeout: 800 });
+      return () => idleWindow.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = globalThis.setTimeout(onIdle, 150);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
@@ -134,7 +164,15 @@ const Index = () => {
             <div className="pointer-events-none absolute right-3 top-3 z-20 bg-card brutal-border brutal-shadow-sm px-2 py-1 font-display uppercase text-[10px] sm:text-xs leading-none">
               Brainy
             </div>
-            <Mascot3D />
+            {showMascot ? (
+              <Suspense fallback={<div className="h-full w-full bg-brainy-lime" />}>
+                <Mascot3D />
+              </Suspense>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-brainy-lime">
+                <div className="h-28 w-28 rounded-full brutal-border bg-card/60 brutal-shadow-sm" />
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -228,6 +266,19 @@ const Index = () => {
           })}
         </div>
       </section>
+
+      {hasSession ? (
+        <div className="fixed bottom-4 right-4 z-40 flex items-end justify-end">
+          <button
+            type="button"
+            data-sfx="destructive"
+            onClick={() => clearSession()}
+            className="bg-card brutal-border brutal-shadow-sm brutal-press px-3 py-2 font-display uppercase text-xs sm:text-sm"
+          >
+            Logout
+          </button>
+        </div>
+      ) : null}
 
       {/* ABOUT */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">

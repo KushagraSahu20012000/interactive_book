@@ -373,8 +373,8 @@ const BookDetail = () => {
   const suppressAudioErrorRef = useRef(false);
 
   const shouldPoll = useMemo(
-    () => !page || page.status === "queued" || page.status === "text_ready",
-    [page]
+    () => !book?.isSample && (!page || page.status === "queued" || page.status === "text_ready"),
+    [book?.isSample, page]
   );
 
   const load = async () => {
@@ -458,8 +458,11 @@ const BookDetail = () => {
     }
 
     const timer = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
       load().catch(() => {});
-    }, 2000);
+    }, 5000);
 
     return () => clearInterval(timer);
   }, [shouldPoll, id, pageNumber]);

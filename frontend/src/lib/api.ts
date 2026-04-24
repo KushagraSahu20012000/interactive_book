@@ -1,3 +1,5 @@
+import { getGuestKey } from "@/lib/auth";
+
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -8,6 +10,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
+  }
+  const guestKey = getGuestKey();
+  if (guestKey) {
+    headers.set("X-Guest-Key", guestKey);
   }
 
   const response = await fetch(`${BACKEND_URL}${path}`, {

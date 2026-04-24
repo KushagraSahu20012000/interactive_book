@@ -8,6 +8,11 @@ const bookSchema = new mongoose.Schema(
       required: false,
       index: true
     },
+    guestKey: {
+      type: String,
+      default: "",
+      index: true
+    },
     topic: { type: String, required: true },
     description: { type: String, default: "" },
     ageGroup: {

@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { clearSession, hasActiveSession, subscribeAuthStateChange } from "@/lib/auth";
 import { submitSuggestion, submitUpgradeRequest } from "@/lib/api";
 
 const suggestionCategories = [
@@ -24,6 +25,7 @@ const suggestionCategories = [
 ] as const;
 
 export function StickyFeedbackButtons() {
+  const [hasSession, setHasSession] = useState(hasActiveSession());
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [suggestionOpen, setSuggestionOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
@@ -37,6 +39,8 @@ export function StickyFeedbackButtons() {
   const [category, setCategory] = useState<(typeof suggestionCategories)[number]>("10-15");
   const [suggestionText, setSuggestionText] = useState("");
   const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
+
+  useEffect(() => subscribeAuthStateChange(() => setHasSession(hasActiveSession())), []);
 
   const resetUpgrade = () => {
     setWantsBetterContent(true);
@@ -127,6 +131,16 @@ export function StickyFeedbackButtons() {
         >
           Suggestion Box
         </button>
+        {hasSession ? (
+          <button
+            type="button"
+            data-sfx="destructive"
+            onClick={() => clearSession()}
+            className="bg-card brutal-border brutal-shadow-sm brutal-press px-3 py-2 font-display uppercase text-xs sm:text-sm"
+          >
+            Logout
+          </button>
+        ) : null}
       </div>
 
       {statusMessage ? (

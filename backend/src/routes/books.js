@@ -14,12 +14,24 @@ export function createBooksRouter(io) {
   const validNeurotypes = new Set(["ADHD", "Dyslexia", "Autism", "None"]);
   const validLanguages = new Set(["English", "Hindi"]);
 
+  const getRequesterIdentity = (req) => {
+    const userId = req.auth?.sub ? String(req.auth.sub) : "";
+    const guestKey = typeof req.headers["x-guest-key"] === "string" ? String(req.headers["x-guest-key"]).trim() : "";
+
+    return {
+      userId,
+      guestKey,
+    };
+  };
+
   router.use(attachAuthOptional);
 
-  const getBookRecord = async (bookId, userId = null) => {
+  const getBookRecord = async (bookId, identity = { userId: "", guestKey: "" }) => {
     const [book, sampleBook] = await Promise.all([Book.findById(bookId), SampleBook.findById(bookId)]);
     if (book) {
-      if (!userId || String(book.userId) !== String(userId)) {
+      const ownsAsUser = identity.userId && book.userId && String(book.userId) === identity.userId;
+      const ownsAsGuest = identity.guestKey && book.guestKey && String(book.guestKey) === identity.guestKey;
+      if (!ownsAsUser && !ownsAsGuest) {
         return null;
       }
       return { kind: "book", doc: book };
@@ -32,10 +44,15 @@ export function createBooksRouter(io) {
 
   router.get("/", async (req, res, next) => {
     try {
-      const userId = req.auth?.sub ? String(req.auth.sub) : null;
+      const identity = getRequesterIdentity(req);
+      const bookFilter = identity.userId
+        ? { userId: identity.userId }
+        : identity.guestKey
+        ? { guestKey: identity.guestKey }
+        : null;
       const [books, sampleBooks, totalActiveGeneratedBooks] = await Promise.all([
-        userId
-          ? Book.find({ userId })
+        bookFilter
+          ? Book.find(bookFilter)
           .sort({ createdAt: -1 })
           .select("title topic ageGroup neurotype language status currentPageNumber totalPagesGenerated coverImageUrl createdAt")
           .lean()
@@ -58,11 +75,13 @@ export function createBooksRouter(io) {
     }
   });
 
-  router.post("/", requireAuth, async (req, res, next) => {
+  router.post("/", async (req, res, next) => {
     try {
-      const userId = String(req.auth?.sub || "");
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
+      const identity = getRequesterIdentity(req);
+      const userId = identity.userId;
+      const guestKey = identity.guestKey;
+      if (!userId && !guestKey) {
+        return res.status(401).json({ message: "Login or continue as guest to create books." });
       }
 
       const {
@@ -88,7 +107,8 @@ export function createBooksRouter(io) {
       }
 
       const book = await Book.create({
-        userId,
+        userId: userId || undefined,
+        guestKey,
         topic: normalizedTopic,
         description: normalizedDescription,
         ageGroup,
@@ -139,7 +159,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
+      const record = await getBookRecord(req.params.bookId, getRequesterIdentity(req));
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -163,7 +183,7 @@ export function createBooksRouter(io) {
 
   router.post("/:bookId/next", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
+      const record = await getBookRecord(req.params.bookId, getRequesterIdentity(req));
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
