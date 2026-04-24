@@ -50,6 +50,13 @@ type BookData = {
   isSample?: boolean;
 };
 
+const SAMPLE_BOOK_CACHE_KEY = "bright-minds.sample-book-pages";
+
+type SampleBookCacheEntry = {
+  book: BookData;
+  page: PageData | null;
+};
+
 const sectionColors = ["bg-brainy-yellow", "bg-brainy-sky", "bg-brainy-lime"];
 const textColors = ["text-[#ff0f7b]", "text-[#ff5a1f]", "text-[#5b2ca0]"];
 const textColors15To20 = ["text-[#d10d64]", "text-[#d94a14]", "text-[#4b2485]"];
@@ -96,6 +103,30 @@ const DEFAULT_ADAPTIVE_TEXT_LAYOUT: AdaptiveTextLayout = {
   fontSizePx: 24,
   lineHeight: getAdaptiveLineHeight(24, ADAPTIVE_TEXT_GLOBAL_MIN_FONT_PX, ADAPTIVE_TEXT_GLOBAL_MAX_FONT_PX),
   hasOverflow: false,
+};
+
+const getSampleBookCache = () => {
+  try {
+    const raw = localStorage.getItem(SAMPLE_BOOK_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, SampleBookCacheEntry>) : {};
+  } catch {
+    return {};
+  }
+};
+
+const getCachedSampleBookPage = (bookId: string, pageNumber: number) => {
+  const cache = getSampleBookCache();
+  return cache[`${bookId}:${pageNumber}`] || null;
+};
+
+const setCachedSampleBookPage = (bookId: string, pageNumber: number, entry: SampleBookCacheEntry) => {
+  try {
+    const cache = getSampleBookCache();
+    cache[`${bookId}:${pageNumber}`] = entry;
+    localStorage.setItem(SAMPLE_BOOK_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // Ignore cache write failures.
+  }
 };
 
 const renderInteractiveText = (text: string) => {
@@ -351,10 +382,27 @@ const BookDetail = () => {
       return null;
     }
 
+    const cachedSample = getCachedSampleBookPage(id, pageNumber);
+    if (cachedSample) {
+      setBook(cachedSample.book);
+      setPage(cachedSample.page);
+      return cachedSample.book;
+    }
+
     const response = await getBookPage(id, pageNumber);
     const nextBook = response.book as BookData;
+    const nextPage = (response.page || null) as PageData | null;
+
     setBook(nextBook);
-    setPage((response.page || null) as PageData | null);
+    setPage(nextPage);
+
+    if (nextBook.isSample) {
+      setCachedSampleBookPage(id, pageNumber, {
+        book: nextBook,
+        page: nextPage,
+      });
+    }
+
     return nextBook;
   };
 

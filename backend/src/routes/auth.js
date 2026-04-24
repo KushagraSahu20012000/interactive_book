@@ -65,7 +65,17 @@ export function createAuthRouter() {
       const emailHash = hashEmail(normalizedEmail);
       const existing = await User.findOne({ emailHash });
       if (existing) {
-        return res.status(409).json({ message: "User already exists. Please login." });
+        if (!existing.passwordHash) {
+          return res.status(400).json({ message: "This account uses Google login." });
+        }
+
+        const passwordMatches = await bcrypt.compare(normalizedPassword, existing.passwordHash);
+        if (!passwordMatches) {
+          return res.status(409).json({ message: "User already exists. Please login." });
+        }
+
+        const token = issueToken(existing);
+        return res.json({ token, user: toPublicUser(existing) });
       }
 
       const passwordHash = await bcrypt.hash(normalizedPassword, 12);
