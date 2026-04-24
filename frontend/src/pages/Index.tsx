@@ -131,6 +131,9 @@ const Index = () => {
 
         <div className="relative">
           <div className="aspect-square max-w-[500px] mx-auto brutal-border brutal-shadow-lg overflow-hidden bg-brainy-lime">
+            <div className="pointer-events-none absolute right-3 top-3 z-20 bg-card brutal-border brutal-shadow-sm px-2 py-1 font-display uppercase text-[10px] sm:text-xs leading-none">
+              Brainy
+            </div>
             <Mascot3D />
           </div>
         </div>

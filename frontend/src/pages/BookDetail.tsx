@@ -101,12 +101,12 @@ const DEFAULT_ADAPTIVE_TEXT_LAYOUT: AdaptiveTextLayout = {
 const renderInteractiveText = (text: string) => {
   const normalized = text.replace(/\s+/g, " ").trim();
   const sentences = normalized
-    .split(/(?<=\.(?:["']))\s+|(?<=\.)\s+/)
+    .split(/(?<=[.!?](?:["'”]))\s+|(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
     .filter(Boolean);
 
   return (sentences.length ? sentences : [normalized]).map((sentence, sentenceIdx) => {
-    const tokens = sentence.split(/(\s+)/);
+    const tokens = sentence.split(/(["“”]|\s+)/).filter((token) => token.length > 0);
     return (
       <span key={`sentence-${sentenceIdx}`} className="block mb-1.5 last:mb-0">
         {tokens.map((token, tokenIdx) => {
@@ -131,9 +131,10 @@ type AdaptiveSectionTextProps = {
   text: string;
   textColorClass: string;
   className?: string;
+  centerContent?: boolean;
 };
 
-const AdaptiveSectionText = ({ text, textColorClass, className = "" }: AdaptiveSectionTextProps) => {
+const AdaptiveSectionText = ({ text, textColorClass, className = "", centerContent = false }: AdaptiveSectionTextProps) => {
   const outerRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const measureRef = useRef<HTMLDivElement | null>(null);
@@ -270,12 +271,14 @@ const AdaptiveSectionText = ({ text, textColorClass, className = "" }: AdaptiveS
         >
           {renderInteractiveText(text)}
         </div>
-        <p
-          className={`section-text-vivid font-body font-black ${textColorClass} break-words w-full ${layout.hasOverflow ? "pr-2" : ""}`}
-          style={{ fontSize: `${layout.fontSizePx}px`, lineHeight: layout.lineHeight }}
-        >
-          {renderInteractiveText(text)}
-        </p>
+        <div className={centerContent && !layout.hasOverflow ? "h-full flex items-center" : ""}>
+          <p
+            className={`section-text-vivid font-body font-black ${textColorClass} break-words w-full ${layout.hasOverflow ? "pr-2" : ""}`}
+            style={{ fontSize: `${layout.fontSizePx}px`, lineHeight: layout.lineHeight }}
+          >
+            {renderInteractiveText(text)}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -682,9 +685,9 @@ const BookDetail = () => {
       <AlertDialog open={showLimitPopup} onOpenChange={setShowLimitPopup}>
         <AlertDialogContent className="brutal-border bg-brainy-yellow">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-display uppercase text-2xl">Page Limit Reached</AlertDialogTitle>
+            <AlertDialogTitle className="font-display uppercase text-2xl">Yay! Your Book Is Finished</AlertDialogTitle>
             <AlertDialogDescription className="text-foreground font-bold">
-              This book already has 10 pages. Start a new book if you want to continue.
+              Create another book with new topics, or go deeper with an advanced version of this topic.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -802,6 +805,7 @@ const BookDetail = () => {
                 <AdaptiveSectionText
                   text={sectionText || "Generating section text..."}
                   textColorClass={txtColor}
+                  centerContent={Boolean(book.isSample)}
                   className="p-3 sm:p-5 h-[clamp(180px,42vw,260px)] md:h-[clamp(210px,32vw,290px)] lg:h-[clamp(200px,18vw,250px)]"
                 />
               </div>
