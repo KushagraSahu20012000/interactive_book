@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { TopNav } from "@/components/brainy/TopNav";
 import { NavLink } from "@/components/NavLink";
 import { clearSession, hasActiveSession, subscribeAuthStateChange } from "@/lib/auth";
+import topicPresets from "@/data/topicPresets.json";
 import { Bot, Puzzle, Target, Brain, Lightbulb, BookOpen, Sparkles } from "lucide-react";
 
 const Mascot3D = lazy(() => import("@/components/brainy/Mascot3D").then((module) => ({ default: module.Mascot3D })));
@@ -83,22 +84,7 @@ const workflowSteps = [
   },
 ];
 
-const topicTags = [
-  "Critical Thinking",
-  "Systems Thinking",
-  "Logical Thinking",
-  "Scientific Method",
-  "Cognitive Bias",
-  "Emergence",
-  "Quantum Reality",
-  "Environment",
-  "Self-Knowledge",
-  "Mental Health",
-  "Neuroscience",
-  "Nutrition",
-  "Physical Health",
-  "Sex & Gender Education",
-];
+const topicTags = topicPresets.map((topicPreset) => topicPreset.topic);
 
 const Index = () => {
   const [hasSession, setHasSession] = useState(hasActiveSession());

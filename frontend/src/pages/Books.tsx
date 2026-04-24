@@ -5,6 +5,7 @@ import { StickyFeedbackButtons } from "@/components/brainy/StickyFeedbackButtons
 import { createBook, deleteBook, listBooks, loginUser, loginWithGoogle, registerUser } from "@/lib/api";
 import { Loader2, Trash2 } from "lucide-react";
 import { getOrCreateGuestKey, hasGuestSession, isAuthenticated as hasAuthSession, saveAuthSession, subscribeAuthStateChange } from "@/lib/auth";
+import topicPresetsData from "@/data/topicPresets.json";
 import { resolveMediaUrl } from "@/lib/media";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
@@ -23,8 +24,15 @@ type BookSummary = {
   isSample?: boolean;
 };
 
+type TopicPreset = {
+  key: string;
+  topic: string;
+  description: string;
+};
+
 const rotations = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0", "-rotate-3"];
 const hasGoogleClientId = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+const topicPresets = topicPresetsData as TopicPreset[];
 
 const Books = () => {
   const navigate = useNavigate();
@@ -49,6 +57,7 @@ const Books = () => {
   const [error, setError] = useState("");
 
   const [topic, setTopic] = useState("");
+  const [selectedTopicPreset, setSelectedTopicPreset] = useState("");
   const [description, setDescription] = useState("");
   const [ageGroup, setAgeGroup] = useState<"5-10" | "10-15" | "15-20" | "20+">("10-15");
   const [neurotype, setNeurotype] = useState<"ADHD" | "Dyslexia" | "Autism" | "None">("None");
@@ -144,6 +153,22 @@ const Books = () => {
     }
   };
 
+  const applyTopicPreset = (presetKey: string) => {
+    setSelectedTopicPreset(presetKey);
+
+    if (!presetKey) {
+      return;
+    }
+
+    const preset = topicPresets.find((entry) => entry.key === presetKey);
+    if (!preset) {
+      return;
+    }
+
+    setTopic(preset.topic);
+    setDescription(preset.description);
+  };
+
   const onCreate = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
@@ -164,6 +189,7 @@ const Books = () => {
       });
 
       setShowCreate(false);
+      setSelectedTopicPreset("");
       setTopic("");
       setDescription("");
       await refresh();
@@ -485,17 +511,41 @@ const Books = () => {
 
       {showCreate ? (
         <div className="fixed inset-0 z-50 bg-foreground/45 p-4 flex items-center justify-center">
-          <form onSubmit={onCreate} className="w-full max-w-xl bg-card brutal-border brutal-shadow-lg p-6 space-y-4">
+          <form onSubmit={onCreate} className="w-full max-w-3xl bg-card brutal-border brutal-shadow-lg p-6 space-y-4">
             <h2 className="font-display text-3xl uppercase">Create New Book</h2>
               <p className="font-body font-bold text-xs sm:text-sm bg-brainy-yellow/50 brutal-border px-3 py-2">
                 Built with 100% open-source, free AI magic: our content is still in its awkward glow-up phase right now, and we are actively leveling it up (stock images included).
               </p>
 
+            <div className="bg-brainy-sky/35 brutal-border p-3 space-y-2">
+              <p className="font-display uppercase text-xs sm:text-sm">From What You Can Explore</p>
+              <div className="flex flex-wrap gap-2">
+                {topicPresets.map((preset) => (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    data-sfx="toggle"
+                    onClick={() => applyTopicPreset(preset.key)}
+                    className={`px-2 py-1 font-display uppercase text-[11px] brutal-border brutal-shadow-sm brutal-press ${
+                      selectedTopicPreset === preset.key ? "bg-brainy-pink text-primary-foreground" : "bg-card"
+                    }`}
+                  >
+                    {preset.topic}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <label className="block font-bold text-sm uppercase">
               Topic
               <input
                 value={topic}
-                onChange={(event) => setTopic(event.target.value)}
+                onChange={(event) => {
+                  setTopic(event.target.value);
+                  if (selectedTopicPreset) {
+                    setSelectedTopicPreset("");
+                  }
+                }}
                 className="mt-2 w-full border-4 border-foreground p-2 bg-background"
                 placeholder="Example: critical thinking"
                 required

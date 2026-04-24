@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Square, Volume2 } from "lucide-react";
 import { getBookPage, getBookPages, getPageAudioUrl, requestNextPage } from "@/lib/api";
-import { isAuthenticated as hasAuthSession } from "@/lib/auth";
+import { getAuthToken, getGuestKey, isAuthenticated as hasAuthSession } from "@/lib/auth";
 import { socket } from "@/lib/socket";
 import { PixelImageCanvas } from "@/components/PixelImageCanvas";
 import {
@@ -370,6 +370,7 @@ const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const lastBookIdRef = useRef<string | null>(null);
 
   const pageNumber = Math.max(1, Number(searchParams.get("page") || 1));
 
@@ -439,6 +440,13 @@ const BookDetail = () => {
       return;
     }
 
+    const switchingBook = Boolean(lastBookIdRef.current && lastBookIdRef.current !== id);
+    lastBookIdRef.current = id;
+
+    if (switchingBook) {
+      setBook(null);
+    }
+    setPage(null);
     setLoading(true);
     load()
       .then((loadedBook) => {
@@ -605,8 +613,15 @@ const BookDetail = () => {
       const abortController = new AbortController();
       audioAbortControllerRef.current = abortController;
       const audioUrl = `${getPageAudioUrl(id, pageNumber)}?ts=${Date.now()}`;
-      const token = localStorage.getItem("bright_minds_auth_token") || "";
-      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const token = getAuthToken();
+      const guestKey = getGuestKey();
+      const headers = new Headers();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      if (guestKey) {
+        headers.set("X-Guest-Key", guestKey);
+      }
       const response = await fetch(audioUrl, { headers, signal: abortController.signal });
       if (requestVersion !== audioRequestVersionRef.current) {
         return;
@@ -683,7 +698,7 @@ const BookDetail = () => {
     }
   };
 
-  if (loading) {
+  if (loading && !book) {
     return (
       <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center py-20">
@@ -866,7 +881,7 @@ const BookDetail = () => {
 
             return (
               <div
-                key={rowIdx}
+                key={`${pageNumber}-${rowIdx}`}
                 className={`flex flex-col gap-3 sm:gap-4 lg:grid lg:grid-cols-2 ${
                   imageOnLeft ? "" : "lg:[&>*:first-child]:order-2"
                 }`}

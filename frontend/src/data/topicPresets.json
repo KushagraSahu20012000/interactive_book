@@ -1,0 +1,82 @@
+[
+  {
+    "key": "critical-thinking",
+    "topic": "Critical Thinking",
+    "description": "evidence, assumptions, reasoning, judgment"
+  },
+  {
+    "key": "systems-thinking",
+    "topic": "Systems Thinking",
+    "description": "feedback loops, interdependence, complexity, unintended consequences"
+  },
+  {
+    "key": "logical-thinking",
+    "topic": "Logical Thinking",
+    "description": "applied mathematics, problem solving, inference, patterns"
+  },
+  {
+    "key": "scientific-method",
+    "topic": "Scientific Method",
+    "description": "hypothesis, statistics, falsification, experimentation"
+  },
+  {
+    "key": "cognitive-bias",
+    "topic": "Cognitive Bias",
+    "description": "heuristics, judgment errors, perception, decision making"
+  },
+  {
+    "key": "emergence",
+    "topic": "Emergence",
+    "description": "self-organization, patterns, complexity, collective behavior"
+  },
+  {
+    "key": "quantum-reality",
+    "topic": "Quantum Reality",
+    "description": "probability, measurement, uncertainty, wave-particle duality"
+  },
+  {
+    "key": "environment",
+    "topic": "Environment",
+    "description": "ecosystems, sustainability, climate, biodiversity"
+  },
+  {
+    "key": "self-knowledge",
+    "topic": "Self-Knowledge",
+    "description": "identity, values, reflection, self-awareness"
+  },
+  {
+    "key": "emotional-intelligence",
+    "topic": "Emotional Intelligence",
+    "description": "self-awareness, emotional regulation, empathy, expression"
+  },
+  {
+    "key": "social-intelligence",
+    "topic": "Social Intelligence",
+    "description": "communication, social cues, cooperation, relationships"
+  },
+  {
+    "key": "mental-health",
+    "topic": "Mental Health",
+    "description": "psychology, personality types, emotions, resilience"
+  },
+  {
+    "key": "neuroscience",
+    "topic": "Neuroscience",
+    "description": "brain, memory, learning, cognition"
+  },
+  {
+    "key": "nutrition",
+    "topic": "Nutrition",
+    "description": "metabolism, nutrients, diet, energy"
+  },
+  {
+    "key": "physical-health",
+    "topic": "Physical Health",
+    "description": "movement, sleep, hygiene, prevention"
+  },
+  {
+    "key": "sex-gender-education",
+    "topic": "Sex & Gender Education",
+    "description": "consent, body literacy, identity, relationships"
+  }
+]

@@ -272,7 +272,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/pages/:pageNumber/audio", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
+      const record = await getBookRecord(req.params.bookId, getRequesterIdentity(req));
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -348,7 +348,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/pages", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
+      const record = await getBookRecord(req.params.bookId, getRequesterIdentity(req));
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -376,7 +376,7 @@ export function createBooksRouter(io) {
 
   router.get("/:bookId/progress", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
+      const record = await getBookRecord(req.params.bookId, getRequesterIdentity(req));
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
@@ -395,7 +395,7 @@ export function createBooksRouter(io) {
 
   router.delete("/:bookId", async (req, res, next) => {
     try {
-      const record = await getBookRecord(req.params.bookId, req.auth?.sub);
+      const record = await getBookRecord(req.params.bookId, getRequesterIdentity(req));
       if (!record) {
         return res.status(404).json({ message: "Book not found" });
       }
