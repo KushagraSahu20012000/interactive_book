@@ -53,6 +53,10 @@ export function getBookPage(bookId: string, pageNumber?: number) {
   return request<{ book: any; page: any | null }>(`/api/books/${bookId}${query}`);
 }
 
+export function getBookPages(bookId: string) {
+  return request<{ book: any; pages: Array<any> }>(`/api/books/${bookId}/pages`);
+}
+
 export function requestNextPage(bookId: string, fromPageNumber?: number) {
   return request<{ pageId: string; pageNumber: number; aiJobId: string; reused?: boolean }>(`/api/books/${bookId}/next`, {
     method: "POST",

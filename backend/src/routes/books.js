@@ -172,6 +172,10 @@ export function createBooksRouter(io) {
         ? await SamplePage.findOne({ sampleBookId: book._id, pageNumber }).lean()
         : await Page.findOne({ bookId: book._id, pageNumber }).lean();
 
+      if (isSample) {
+        res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400");
+      }
+
       return res.json({
         book: { ...book, isSample },
         page: page || null
@@ -349,12 +353,22 @@ export function createBooksRouter(io) {
         return res.status(404).json({ message: "Book not found" });
       }
 
+      const book = record.doc.toObject();
+      const isSample = record.kind === "sample";
+
       const pages =
-        record.kind === "sample"
+        isSample
           ? await SamplePage.find({ sampleBookId: req.params.bookId }).sort({ pageNumber: 1 }).lean()
           : await Page.find({ bookId: req.params.bookId }).sort({ pageNumber: 1 }).lean();
 
-      return res.json({ pages });
+      if (isSample) {
+        res.setHeader("Cache-Control", "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400");
+      }
+
+      return res.json({
+        book: { ...book, isSample },
+        pages,
+      });
     } catch (error) {
       return next(error);
     }

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Square, Volume2 } from "lucide-react";
-import { getBookPage, getPageAudioUrl, requestNextPage } from "@/lib/api";
+import { getBookPage, getBookPages, getPageAudioUrl, requestNextPage } from "@/lib/api";
 import { isAuthenticated as hasAuthSession } from "@/lib/auth";
 import { socket } from "@/lib/socket";
 import { PixelImageCanvas } from "@/components/PixelImageCanvas";
@@ -123,6 +123,21 @@ const setCachedSampleBookPage = (bookId: string, pageNumber: number, entry: Samp
   try {
     const cache = getSampleBookCache();
     cache[`${bookId}:${pageNumber}`] = entry;
+    localStorage.setItem(SAMPLE_BOOK_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // Ignore cache write failures.
+  }
+};
+
+const setCachedSampleBookPages = (bookId: string, book: BookData, pages: PageData[]) => {
+  try {
+    const cache = getSampleBookCache();
+    for (const samplePage of pages) {
+      cache[`${bookId}:${samplePage.pageNumber}`] = {
+        book,
+        page: samplePage,
+      };
+    }
     localStorage.setItem(SAMPLE_BOOK_CACHE_KEY, JSON.stringify(cache));
   } catch {
     // Ignore cache write failures.
@@ -393,15 +408,28 @@ const BookDetail = () => {
     const nextBook = response.book as BookData;
     const nextPage = (response.page || null) as PageData | null;
 
+    if (nextBook.isSample) {
+      const sampleResponse = await getBookPages(id);
+      const sampleBook = (sampleResponse.book || nextBook) as BookData;
+      const samplePages = (sampleResponse.pages || []) as PageData[];
+      const requestedPage = samplePages.find((candidate) => candidate.pageNumber === pageNumber) || nextPage;
+
+      setBook(sampleBook);
+      setPage(requestedPage);
+      setCachedSampleBookPages(id, sampleBook, samplePages);
+
+      if (!requestedPage) {
+        setCachedSampleBookPage(id, pageNumber, {
+          book: sampleBook,
+          page: null,
+        });
+      }
+
+      return sampleBook;
+    }
+
     setBook(nextBook);
     setPage(nextPage);
-
-    if (nextBook.isSample) {
-      setCachedSampleBookPage(id, pageNumber, {
-        book: nextBook,
-        page: nextPage,
-      });
-    }
 
     return nextBook;
   };

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { resolveMediaUrl } from "@/lib/media";
 
 type PixelImageCanvasProps = {
   pixelArray?: number[][];
@@ -18,6 +19,8 @@ function packToRgb(value: number) {
 }
 
 export function PixelImageCanvas({ pixelArray, imageUrl, width, height, alt, className = "", fallbackText = "Generating..." }: PixelImageCanvasProps) {
+  const resolvedImageUrl = useMemo(() => resolveMediaUrl(imageUrl), [imageUrl]);
+
   const dataUri = useMemo(() => {
     if (!pixelArray || !pixelArray.length || !pixelArray[0]?.length) {
       return "";
@@ -50,10 +53,10 @@ export function PixelImageCanvas({ pixelArray, imageUrl, width, height, alt, cla
     return canvas.toDataURL("image/png");
   }, [pixelArray]);
 
-  if (imageUrl) {
+  if (resolvedImageUrl) {
     return (
       <img
-        src={imageUrl}
+        src={resolvedImageUrl}
         alt={alt}
         width={width || 64}
         height={height || 64}

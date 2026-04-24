@@ -4,6 +4,8 @@ import { SampleBook } from "../models/SampleBook.js";
 import { SamplePage } from "../models/SamplePage.js";
 
 const SAMPLE_SLUG = "environment-for-5-10";
+const SAMPLE_BOOK_DIRECTORY = "environment - 5-10";
+export const SAMPLE_ASSET_BASE_ROUTE = "/sample-assets";
 
 function normalizeTextBlock(text) {
   return text.replace(/\r\n/g, "\n").replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
@@ -23,19 +25,6 @@ function parseSectionText(raw) {
   };
 }
 
-async function fileToDataUrl(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  const mimeByExt = {
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".webp": "image/webp"
-  };
-  const mime = mimeByExt[ext] || "application/octet-stream";
-  const fileBuffer = await fs.readFile(filePath);
-  return `data:${mime};base64,${fileBuffer.toString("base64")}`;
-}
-
 async function findFirstExistingFile(baseDir, fileNames) {
   for (const name of fileNames) {
     const candidate = path.join(baseDir, name);
@@ -51,13 +40,13 @@ async function findFirstExistingFile(baseDir, fileNames) {
 
 function getAssetRootCandidates() {
   return [
-    path.resolve(process.cwd(), "../Assets/sample books/environment - 5-10"),
-    path.resolve(process.cwd(), "Assets/sample books/environment - 5-10"),
-    path.resolve(process.cwd(), "../../interactive_book/Assets/sample books/environment - 5-10")
+    path.resolve(process.cwd(), "../Assets/sample books"),
+    path.resolve(process.cwd(), "Assets/sample books"),
+    path.resolve(process.cwd(), "../../interactive_book/Assets/sample books")
   ];
 }
 
-async function resolveAssetsRoot() {
+export async function resolveSampleAssetsRoot() {
   const candidates = getAssetRootCandidates();
   for (const candidate of candidates) {
     try {
@@ -70,12 +59,40 @@ async function resolveAssetsRoot() {
   return "";
 }
 
+async function resolveSampleBookAssets() {
+  const assetsRoot = await resolveSampleAssetsRoot();
+  if (!assetsRoot) {
+    return null;
+  }
+
+  const sampleRoot = path.join(assetsRoot, SAMPLE_BOOK_DIRECTORY);
+  try {
+    await fs.access(sampleRoot);
+    return { assetsRoot, sampleRoot };
+  } catch {
+    return null;
+  }
+}
+
+function toPublicAssetUrl(assetsRoot, filePath) {
+  const encodedPath = path
+    .relative(assetsRoot, filePath)
+    .split(path.sep)
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `${SAMPLE_ASSET_BASE_ROUTE}/${encodedPath}`;
+}
+
 export async function seedSampleBooksFromAssets() {
-  const sampleRoot = await resolveAssetsRoot();
-  if (!sampleRoot) {
+  const resolvedAssets = await resolveSampleBookAssets();
+  if (!resolvedAssets) {
     console.warn("[sample-seed] Assets folder not found; skipping sample-book seed.");
     return;
   }
+
+  const { assetsRoot, sampleRoot } = resolvedAssets;
 
   const titleImagePath = await findFirstExistingFile(sampleRoot, [
     "title image.png",
@@ -83,7 +100,7 @@ export async function seedSampleBooksFromAssets() {
     "title image.jpeg",
     "title image.webp"
   ]);
-  const coverImageUrl = titleImagePath ? await fileToDataUrl(titleImagePath) : "";
+  const coverImageUrl = titleImagePath ? toPublicAssetUrl(assetsRoot, titleImagePath) : "";
 
   const sampleBook = await SampleBook.findOneAndUpdate(
     { slug: SAMPLE_SLUG },
@@ -127,9 +144,9 @@ export async function seedSampleBooksFromAssets() {
     const image2Path = await findFirstExistingFile(pageDir, ["image 2.png", "image 2.jpg", "image 2.jpeg", "image 2.webp"]);
     const image3Path = await findFirstExistingFile(pageDir, ["image 3.png", "image 3.jpg", "image 3.jpeg", "image 3.webp"]);
 
-    const image1Url = image1Path ? await fileToDataUrl(image1Path) : "";
-    const image2Url = image2Path ? await fileToDataUrl(image2Path) : "";
-    const image3Url = image3Path ? await fileToDataUrl(image3Path) : "";
+    const image1Url = image1Path ? toPublicAssetUrl(assetsRoot, image1Path) : "";
+    const image2Url = image2Path ? toPublicAssetUrl(assetsRoot, image2Path) : "";
+    const image3Url = image3Path ? toPublicAssetUrl(assetsRoot, image3Path) : "";
 
     pagesPayload.push({
       sampleBookId: sampleBook._id,

@@ -8,7 +8,7 @@ import { createBooksRouter } from "./routes/books.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createFeedbackRouter } from "./routes/feedback.js";
 import { SampleBook } from "./models/SampleBook.js";
-import { seedSampleBooksFromAssets } from "./services/sampleBooksSeeder.js";
+import { SAMPLE_ASSET_BASE_ROUTE, resolveSampleAssetsRoot, seedSampleBooksFromAssets } from "./services/sampleBooksSeeder.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -71,6 +71,21 @@ const PORT = Number(process.env.PORT || 4000);
 
 async function start() {
   await connectDB(process.env.MONGO_URI);
+  const sampleAssetsRoot = await resolveSampleAssetsRoot();
+  if (sampleAssetsRoot) {
+    app.use(
+      SAMPLE_ASSET_BASE_ROUTE,
+      express.static(sampleAssetsRoot, {
+        immutable: true,
+        maxAge: "1y",
+        setHeaders: (res) => {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      })
+    );
+  } else {
+    console.warn("[sample-assets] Assets folder not found; static sample images disabled.");
+  }
   await seedSampleBooksFromAssets();
   server.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);

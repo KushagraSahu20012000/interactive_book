@@ -5,6 +5,7 @@ import { StickyFeedbackButtons } from "@/components/brainy/StickyFeedbackButtons
 import { createBook, deleteBook, listBooks, loginUser, loginWithGoogle, registerUser } from "@/lib/api";
 import { Loader2, Trash2 } from "lucide-react";
 import { getOrCreateGuestKey, hasGuestSession, isAuthenticated as hasAuthSession, saveAuthSession, subscribeAuthStateChange } from "@/lib/auth";
+import { resolveMediaUrl } from "@/lib/media";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 
@@ -380,17 +381,20 @@ const Books = () => {
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {sampleBooks.map((book, i) => (
-                    <div key={book._id} className="relative w-full max-w-[280px] mx-auto sm:max-w-none">
+                  {sampleBooks.map((book, i) => {
+                    const coverImageUrl = resolveMediaUrl(book.coverImageUrl);
+
+                    return (
+                      <div key={book._id} className="relative w-full max-w-[280px] mx-auto sm:max-w-none">
                       <button
                         onClick={() => navigate(`/books/${book._id}?page=1`)}
                         className={`${rotations[i % rotations.length]} brutal-press text-left w-full`}
                       >
                         <div className="bg-brainy-lime brutal-border brutal-shadow overflow-hidden">
                           <div className="aspect-[4/5] relative bg-card overflow-hidden">
-                            {book.coverImageUrl ? (
+                            {coverImageUrl ? (
                               <img
-                                src={book.coverImageUrl}
+                                src={coverImageUrl}
                                 alt={`${book.title} cover`}
                                 className="absolute inset-0 w-full h-full object-cover"
                                 loading="lazy"
@@ -403,8 +407,9 @@ const Books = () => {
                       <div className="absolute bottom-3 right-3 z-10 bg-card brutal-border brutal-shadow-sm px-2 py-1 font-display uppercase text-xs">
                         Sample
                       </div>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
@@ -413,8 +418,11 @@ const Books = () => {
               <div>
                 <h2 className="font-display uppercase text-2xl sm:text-3xl mb-4">Your Books</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {generatedBooks.map((book, i) => (
-                    <div key={book._id} className="relative w-full max-w-[280px] mx-auto sm:max-w-none">
+                  {generatedBooks.map((book, i) => {
+                    const coverImageUrl = resolveMediaUrl(book.coverImageUrl);
+
+                    return (
+                      <div key={book._id} className="relative w-full max-w-[280px] mx-auto sm:max-w-none">
                       <button
                         onClick={() => {
                           if (!authenticated) {
@@ -428,9 +436,9 @@ const Books = () => {
                       >
                         <div className="bg-brainy-yellow brutal-border brutal-shadow overflow-hidden">
                           <div className="aspect-[4/5] relative bg-card p-5 flex flex-col justify-between">
-                            {book.coverImageUrl ? (
+                            {coverImageUrl ? (
                               <img
-                                src={book.coverImageUrl}
+                                src={coverImageUrl}
                                 alt={`${book.title} cover`}
                                 className="absolute inset-0 w-full h-full object-cover opacity-45"
                                 loading="lazy"
@@ -465,8 +473,9 @@ const Books = () => {
                       >
                         <Trash2 className="w-4 h-4" strokeWidth={3} />
                       </button>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
