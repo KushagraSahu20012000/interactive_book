@@ -6,9 +6,10 @@ import * as THREE from "three";
 
 type RobotProps = {
   onSpin: () => void;
+  muted: boolean;
 };
 
-const Robot = ({ onSpin }: RobotProps) => {
+const Robot = ({ onSpin, muted }: RobotProps) => {
   const group = useRef<THREE.Group>(null);
   const head = useRef<THREE.Group>(null);
   const headSpin = useRef<THREE.Group>(null);
@@ -145,6 +146,10 @@ const Robot = ({ onSpin }: RobotProps) => {
 
     [screenBarLeft.current, screenBarCenter.current, screenBarRight.current].forEach((bar, index) => {
       if (!bar) {
+        return;
+      }
+
+      if (muted) {
         return;
       }
 
@@ -331,7 +336,7 @@ const Robot = ({ onSpin }: RobotProps) => {
 };
 
 export const Mascot3D = () => {
-  const { play } = useUiSound();
+  const { muted, play } = useUiSound();
 
   return (
     <div className="w-full h-full">
@@ -342,7 +347,7 @@ export const Mascot3D = () => {
         <directionalLight position={[-3, 2, -2]} intensity={0.55} color="#ff3d8a" />
         <pointLight position={[0, 1.6, 2.4]} intensity={0.85} color="#ffffff" />
         <Suspense fallback={null}>
-          <Robot onSpin={() => play("mascot")} />
+          <Robot muted={muted} onSpin={() => play("mascot")} />
         </Suspense>
         <OrbitControls
           enablePan={false}

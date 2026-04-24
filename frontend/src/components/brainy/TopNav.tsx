@@ -47,7 +47,7 @@ export const TopNav = () => {
           </NavLink>
           <div className="hidden sm:flex items-center gap-1 px-3 py-2 bg-card brutal-border brutal-shadow-sm font-display text-sm">
             <span>●</span>
-            <span>Made with AI</span>
+            <span>AI Live</span>
           </div>
         </div>
       </div>
