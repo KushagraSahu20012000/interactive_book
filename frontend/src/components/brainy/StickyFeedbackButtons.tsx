@@ -113,6 +113,7 @@ export function StickyFeedbackButtons() {
       <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2 items-end">
         <button
           type="button"
+          data-sfx="modal"
           onClick={() => setUpgradeOpen(true)}
           className="bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press px-3 py-2 font-display uppercase text-xs sm:text-sm"
         >
@@ -120,6 +121,7 @@ export function StickyFeedbackButtons() {
         </button>
         <button
           type="button"
+          data-sfx="modal"
           onClick={() => setSuggestionOpen(true)}
           className="bg-brainy-sky brutal-border brutal-shadow-sm brutal-press px-3 py-2 font-display uppercase text-xs sm:text-sm"
         >
@@ -192,6 +194,7 @@ export function StickyFeedbackButtons() {
               <button
                 type="button"
                 onClick={() => setUpgradeOpen(false)}
+                data-sfx="modal"
                 className="px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-background"
               >
                 Cancel
@@ -199,6 +202,7 @@ export function StickyFeedbackButtons() {
               <button
                 type="submit"
                 disabled={submittingUpgrade}
+                data-sfx="primary"
                 className="px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-brainy-pink text-primary-foreground disabled:opacity-50"
               >
                 {submittingUpgrade ? "Submitting..." : "Submit"}
@@ -248,6 +252,7 @@ export function StickyFeedbackButtons() {
               <button
                 type="button"
                 onClick={() => setSuggestionOpen(false)}
+                data-sfx="modal"
                 className="px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-background"
               >
                 Cancel
@@ -255,6 +260,7 @@ export function StickyFeedbackButtons() {
               <button
                 type="submit"
                 disabled={submittingSuggestion}
+                data-sfx="primary"
                 className="px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-brainy-sky disabled:opacity-50"
               >
                 {submittingSuggestion ? "Submitting..." : "Submit"}

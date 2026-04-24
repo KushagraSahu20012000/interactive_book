@@ -2,11 +2,18 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+IMAGE_DESCRIPTION_INSTRUCTION = "Describe a single visible scene with concrete objects and actions, using no adjectives or style references, within 6 words."
+AI_IMAGE_DESCRIPTION_INSTRUCTION = "Describe a single visible scene with concrete objects and actions. Include style and mood references, within 12 words."
+SECTION_TEXT_MAX_30_WORDS_PATTERN = r"^(?:\S+\s+){0,29}\S+$"
 
 class PageSectionDraft(BaseModel):
     position: int = Field(ge=1, le=3)
-    text: str = Field(min_length=1)
-    image_prompt: str = Field(min_length=1, description="within 6 words, no adjectives, focused on objects and actions, no style or artist references")
+    text: str = Field(
+        min_length=1,
+        pattern=SECTION_TEXT_MAX_30_WORDS_PATTERN,
+        description="Section text must be 1-30 words.",
+    )
+    image_prompt: str = Field(min_length=1, description=IMAGE_DESCRIPTION_INSTRUCTION)
 
 
 class PageGenerationOutput(BaseModel):
@@ -18,5 +25,5 @@ class PageGenerationOutput(BaseModel):
 
 class BookInitOutput(BaseModel):
     title: str = Field(min_length=1)
-    cover_prompt: str = Field(min_length=1, description="within 6 words, no adjectives, focused on objects and actions, no style or artist references")
+    cover_prompt: str = Field(min_length=1, description=IMAGE_DESCRIPTION_INSTRUCTION)
     error_message: str = ""

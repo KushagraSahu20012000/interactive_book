@@ -198,6 +198,7 @@ const Books = () => {
           <div className="flex gap-2">
             <button
               type="button"
+              data-sfx="toggle"
               className={`flex-1 px-3 py-2 font-display uppercase brutal-border brutal-shadow-sm ${
                 authMode === "register" ? "bg-brainy-pink text-primary-foreground" : "bg-background"
               }`}
@@ -207,6 +208,7 @@ const Books = () => {
             </button>
             <button
               type="button"
+              data-sfx="toggle"
               className={`flex-1 px-3 py-2 font-display uppercase brutal-border brutal-shadow-sm ${
                 authMode === "login" ? "bg-brainy-pink text-primary-foreground" : "bg-background"
               }`}
@@ -252,6 +254,7 @@ const Books = () => {
               <button
                 type="submit"
                 disabled={authLoading}
+                data-sfx="primary"
                 className="w-full px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-brainy-lime"
               >
                 {authLoading ? "Creating..." : "Create Account"}
@@ -278,6 +281,7 @@ const Books = () => {
               <button
                 type="submit"
                 disabled={authLoading}
+                data-sfx="primary"
                 className="w-full px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-brainy-sky"
               >
                 {authLoading ? "Logging in..." : "Login"}
@@ -298,6 +302,7 @@ const Books = () => {
           {authenticated ? (
             <button
               type="button"
+              data-sfx="destructive"
               className="px-3 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-background"
               onClick={() => {
                 clearAuthSession();
@@ -312,7 +317,7 @@ const Books = () => {
       </Dialog>
 
       <TopNav />
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-32 sm:pb-10">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
           <div>
             <h1 className="font-display text-5xl sm:text-7xl uppercase leading-none">
@@ -326,6 +331,7 @@ const Books = () => {
             </div>
             <button
               type="button"
+              data-sfx="primary"
               onClick={() => {
                 if (!authenticated) {
                   setAuthMode("register");
@@ -359,7 +365,7 @@ const Books = () => {
                 <h2 className="font-display uppercase text-2xl sm:text-3xl mb-4">Creator Samples</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {sampleBooks.map((book, i) => (
-                    <div key={book._id} className="relative">
+                    <div key={book._id} className="relative w-full max-w-[280px] mx-auto sm:max-w-none">
                       <button
                         onClick={() => navigate(`/books/${book._id}?page=1`)}
                         className={`${rotations[i % rotations.length]} brutal-press text-left w-full`}
@@ -392,7 +398,7 @@ const Books = () => {
                 <h2 className="font-display uppercase text-2xl sm:text-3xl mb-4">Your Books</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {generatedBooks.map((book, i) => (
-                    <div key={book._id} className="relative">
+                    <div key={book._id} className="relative w-full max-w-[280px] mx-auto sm:max-w-none">
                       <button
                         onClick={() => {
                           if (!authenticated) {
@@ -410,7 +416,7 @@ const Books = () => {
                               <img
                                 src={book.coverImageUrl}
                                 alt={`${book.title} cover`}
-                                className="absolute inset-0 w-full h-full object-cover opacity-30"
+                                className="absolute inset-0 w-full h-full object-cover opacity-45"
                                 loading="lazy"
                                 referrerPolicy="no-referrer"
                               />
@@ -436,6 +442,7 @@ const Books = () => {
                           event.stopPropagation();
                           void onDelete(book._id);
                         }}
+                        data-sfx="destructive"
                         disabled={deletingId === book._id}
                         className="absolute bottom-3 right-3 z-10 bg-card brutal-border brutal-shadow-sm brutal-press p-2 disabled:opacity-50"
                         aria-label="Delete book"
@@ -526,6 +533,7 @@ const Books = () => {
               <button
                 type="button"
                 onClick={() => setShowCreate(false)}
+                data-sfx="modal"
                 className="px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-background"
               >
                 Cancel
@@ -533,6 +541,7 @@ const Books = () => {
               <button
                 type="submit"
                 disabled={saving}
+                data-sfx="primary"
                 className="px-4 py-2 font-display uppercase brutal-border brutal-shadow-sm brutal-press bg-brainy-pink text-primary-foreground"
               >
                 {saving ? "Creating..." : "Submit"}

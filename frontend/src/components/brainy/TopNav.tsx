@@ -1,7 +1,10 @@
 import { NavLink } from "@/components/NavLink";
-import { Brain } from "lucide-react";
+import { useUiSound } from "@/audio/UiSoundProvider";
+import { Brain, Volume2, VolumeX } from "lucide-react";
 
 export const TopNav = () => {
+  const { muted, toggleMuted } = useUiSound();
+
   return (
     <nav className="sticky top-0 z-50 bg-brainy-yellow border-b-[4px] border-foreground">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
@@ -17,6 +20,16 @@ export const TopNav = () => {
         </NavLink>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={toggleMuted}
+            data-sfx-ignore="true"
+            aria-label={muted ? "Turn sound on" : "Turn sound off"}
+            title={muted ? "Turn sound on" : "Turn sound off"}
+            className="flex items-center justify-center px-3 py-2 bg-card brutal-border brutal-shadow-sm brutal-press"
+          >
+            {muted ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />}
+          </button>
           <NavLink
             to="/"
             end
@@ -34,7 +47,7 @@ export const TopNav = () => {
           </NavLink>
           <div className="hidden sm:flex items-center gap-1 px-3 py-2 bg-card brutal-border brutal-shadow-sm font-display text-sm">
             <span>●</span>
-            <span>AI Live</span>
+            <span>Made with AI</span>
           </div>
         </div>
       </div>

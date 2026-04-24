@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { UiSoundProvider } from "@/audio/UiSoundProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Books from "./pages/Books";
@@ -28,17 +29,19 @@ const RoutedApp = () => (
 const App = () => (
   <AppErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        {googleClientId ? (
-          <GoogleOAuthProvider clientId={googleClientId}>
+      <UiSoundProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          {googleClientId ? (
+            <GoogleOAuthProvider clientId={googleClientId}>
+              <RoutedApp />
+            </GoogleOAuthProvider>
+          ) : (
             <RoutedApp />
-          </GoogleOAuthProvider>
-        ) : (
-          <RoutedApp />
-        )}
-      </TooltipProvider>
+          )}
+        </TooltipProvider>
+      </UiSoundProvider>
     </QueryClientProvider>
   </AppErrorBoundary>
 );

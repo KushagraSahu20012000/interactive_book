@@ -25,9 +25,6 @@ from .schemas import BookInitOutput
 logger = logging.getLogger(__name__)
 
 
-ERROR_FALLBACK_TEXT = "Free Tier Expired. Request Upgrade!"
-
-
 BOOK_INIT_PROMPT = """
 [Language : {language}]
 {language_style_instruction}
@@ -114,12 +111,8 @@ class BookInitAI:
         )
         return BookInitOutput(title=title, cover_prompt=cover_prompt, error_message=error_message)
 
-    def _error_fallback_output(self, error_message: str = "") -> BookInitOutput:
-        return BookInitOutput(
-            title=ERROR_FALLBACK_TEXT,
-            cover_prompt="student reading subscription required message",
-            error_message=error_message,
-        )
+    def _error_fallback_output(self, payload: dict[str, Any], error_message: str = "") -> BookInitOutput:
+        return self._fallback_output(payload, error_message)
 
     async def generate_book_init(self, payload: dict[str, Any]) -> BookInitOutput:
         try:
@@ -130,4 +123,5 @@ class BookInitAI:
             return result
         except Exception as error:  # noqa: BLE001
             logger.exception("Book init generation failed", extra={"model": self.model_name})
-            return self._error_fallback_output(str(error))
+            normalized = self._normalize_inputs(payload)
+            return self._error_fallback_output(normalized, str(error))

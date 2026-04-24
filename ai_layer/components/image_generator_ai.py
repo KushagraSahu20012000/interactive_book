@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
+import time
 import urllib.parse
 import urllib.request
 from typing import Any
@@ -12,6 +14,10 @@ from huggingface_hub import InferenceClient
 from PIL import Image, ImageDraw
 
 from .config import get_env
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class ImageGeneratorAI:
@@ -28,6 +34,15 @@ class ImageGeneratorAI:
         self.hf_provider = get_env("HF_PROVIDER", "nscale")
         self.hf_model = get_env("HF_IMAGE_MODEL", "stabilityai/stable-diffusion-xl-base-1.0")
         self.hf_client = InferenceClient(provider=self.hf_provider, api_key=hf_api_key) if hf_api_key else None
+        logger.info(
+            "image_generator init hold=%s image_source=%s pexels_key=%s hf_provider=%s hf_model=%s hf_configured=%s",
+            self.hold_image_generation,
+            self.image_source,
+            bool(self.pexels_api_key),
+            self.hf_provider,
+            self.hf_model,
+            self.hf_client is not None,
+        )
 
     async def generate_payload(
         self,
@@ -38,7 +53,16 @@ class ImageGeneratorAI:
         size: int = 64,
         rank: int = 10,
     ) -> dict[str, Any]:
+        started_at = time.perf_counter()
+        logger.info(
+            "generate_payload start source=%s width=%s height=%s prompt=%s",
+            self.image_source,
+            width,
+            height,
+            (prompt or "")[:180],
+        )
         if self.hold_image_generation:
+            logger.info("generate_payload hold_image_generation active; returning empty payload")
             return {
                 "pixel_array": [],
                 "width": 0,
@@ -49,20 +73,27 @@ class ImageGeneratorAI:
         if self.image_source == "pexels":
             image_url = await asyncio.to_thread(self._pexels_image_link, prompt)
             if image_url:
+                logger.info("generate_payload pexels_hit image_url=%s", image_url[:160])
                 return {
                     "pixel_array": [],
                     "width": 0,
                     "height": 0,
                     "image_url": image_url,
                 }
+            logger.warning("generate_payload pexels_miss; falling back to model generation")
             image = await asyncio.to_thread(self._generate_image, prompt, width, height)
-            return await asyncio.to_thread(self._low_rank_pixel_array, image, size, rank)
+            payload = await asyncio.to_thread(self._low_rank_pixel_array, image, size, rank)
+            logger.info("generate_payload done source=model_fallback elapsed_ms=%.1f", (time.perf_counter() - started_at) * 1000)
+            return payload
 
         image = await asyncio.to_thread(self._generate_image, prompt, width, height)
-        return await asyncio.to_thread(self._low_rank_pixel_array, image, size, rank)
+        payload = await asyncio.to_thread(self._low_rank_pixel_array, image, size, rank)
+        logger.info("generate_payload done source=%s elapsed_ms=%.1f", self.image_source, (time.perf_counter() - started_at) * 1000)
+        return payload
 
     def _pexels_image_link(self, prompt: str) -> str:
         if not self.pexels_api_key:
+            logger.warning("_pexels_image_link skipped: PEXELS_API_KEY missing")
             return ""
 
         base_url = "https://api.pexels.com/v1/search"
@@ -85,23 +116,29 @@ class ImageGeneratorAI:
         try:
             with urllib.request.urlopen(req, timeout=15) as response:  # noqa: S310
                 data = json.loads(response.read().decode("utf-8"))
-        except Exception:  # noqa: BLE001
+        except Exception as error:  # noqa: BLE001
+            logger.warning("_pexels_image_link request_failed error=%s", error)
             return ""
 
         photos = data.get("photos") or []
         if not photos:
+            logger.info("_pexels_image_link no_photos prompt=%s", (prompt or "")[:120])
             return ""
 
         src = photos[0].get("src") or {}
         link = str(src.get("large2x") or src.get("large") or src.get("original") or "").strip()
         if link.startswith("http://") or link.startswith("https://"):
+            logger.info("_pexels_image_link selected_url=%s", link[:160])
             return link
+        logger.info("_pexels_image_link invalid_url_from_api")
         return ""
 
     def _generate_image(self, prompt: str, width: int, height: int) -> Image.Image:
         if self.hf_client:
+            logger.info("_generate_image hf_request provider=%s model=%s size=%sx%s", self.hf_provider, self.hf_model, width, height)
             return self.hf_client.text_to_image(prompt, model=self.hf_model, width=width, height=height)
 
+        logger.warning("_generate_image hf_client_missing using_local_fallback_art")
         fallback = Image.new("RGB", (width, height), (245, 240, 190))
         draw = ImageDraw.Draw(fallback)
         draw.rectangle((50, 50, width - 50, height - 50), outline=(20, 20, 20), width=8)

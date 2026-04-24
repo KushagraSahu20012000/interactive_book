@@ -31,6 +31,17 @@ ERROR_FALLBACK_TEXT = "Free Tier Expired. Request Upgrade!"
 
 logger = logging.getLogger(__name__)
 
+
+def _is_rate_limited_error(error_message: str) -> bool:
+    lowered = str(error_message or "").lower()
+    return (
+        "rate limit" in lowered
+        or "rate_limit_exceeded" in lowered
+        or "tokens per day" in lowered
+        or "free tier" in lowered
+        or "429" in lowered
+    )
+
 # ── Few-shot examples loaded from JSON ───────────────────────────────────────
 _FEW_SHOTS_PATH = Path(__file__).parent / "few_shots.json"
 with _FEW_SHOTS_PATH.open("r", encoding="utf-8") as _f:
@@ -593,27 +604,32 @@ class PageGeneratorAI:
         return self._error_fallback_output(payload, error_message)
 
     def _error_fallback_output(self, payload: dict[str, Any], error_message: str = "") -> PageGenerationOutput:
+        topic = str(payload.get("topic") or "General Learning")
+        page_number = max(1, int(payload.get("page_number") or 1))
+        is_rate_limited = _is_rate_limited_error(error_message)
+        section_text = ERROR_FALLBACK_TEXT if is_rate_limited else "Section text unavailable. Please retry."
+
         sections = [
             PageSectionDraft(
                 position=1,
-                text=ERROR_FALLBACK_TEXT,
-                image_prompt="student looking at locked lesson screen",
+                text=section_text,
+                image_prompt=f"student exploring {topic} concept visual, section one",
             ),
             PageSectionDraft(
                 position=2,
-                text=ERROR_FALLBACK_TEXT,
-                image_prompt="classroom board showing subscription notice",
+                text=section_text,
+                image_prompt=f"classroom whiteboard explaining {topic}, section two",
             ),
             PageSectionDraft(
                 position=3,
-                text=ERROR_FALLBACK_TEXT,
-                image_prompt="student opening premium plan dialog",
+                text=section_text,
+                image_prompt=f"learner applying {topic} in real task, section three",
             ),
         ]
         return PageGenerationOutput(
-            title=ERROR_FALLBACK_TEXT,
+            title=f"{topic} - Page {page_number}",
             sections=sections,
-            action_item=ERROR_FALLBACK_TEXT,
+            action_item="Review this page and regenerate for complete content.",
             error_message=error_message,
         )
 

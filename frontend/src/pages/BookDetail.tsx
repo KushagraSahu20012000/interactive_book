@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Square, Volume2 } from "lucide-react";
 import { getBookPage, getPageAudioUrl, requestNextPage } from "@/lib/api";
@@ -52,8 +52,234 @@ type BookData = {
 
 const sectionColors = ["bg-brainy-yellow", "bg-brainy-sky", "bg-brainy-lime"];
 const textColors = ["text-[#ff0f7b]", "text-[#ff5a1f]", "text-[#5b2ca0]"];
+const textColors15To20 = ["text-[#d10d64]", "text-[#d94a14]", "text-[#4b2485]"];
 const MAX_PAGE_LIMIT_MESSAGE = "Maximum page limit reached (10 pages).";
-const TTS_LIMIT_MESSAGE = "Free Tier Expired. Request Upgrade!";
+const AUDIO_RATE_LIMIT_MESSAGE = "Audio is temporarily unavailable due to API limits.";
+
+const isTwentyPlusAgeGroup = (ageGroup?: string) => String(ageGroup || "").trim() === "20+";
+const isFifteenToTwentyAgeGroup = (ageGroup?: string) => String(ageGroup || "").trim() === "15-20";
+
+const ADAPTIVE_TEXT_GLOBAL_MIN_FONT_PX = 12;
+const ADAPTIVE_TEXT_GLOBAL_MAX_FONT_PX = 25;
+const ADAPTIVE_TEXT_PRECISION_PX = 0.5;
+const ADAPTIVE_TEXT_EPSILON_PX = 1;
+
+const getAdaptiveFontBounds = (width: number, height: number) => {
+  const safeWidth = Math.max(width || 0, 240);
+  const safeHeight = Math.max(height || 0, 180);
+  const minDimension = Math.min(safeWidth, safeHeight);
+  const minFontPx = Math.max(
+    ADAPTIVE_TEXT_GLOBAL_MIN_FONT_PX,
+    Math.min(16, Math.round(minDimension * 0.065))
+  );
+  const maxFontPx = Math.max(
+    minFontPx + 4,
+    Math.min(ADAPTIVE_TEXT_GLOBAL_MAX_FONT_PX, Math.round(safeWidth * 0.078))
+  );
+
+  return { minFontPx, maxFontPx };
+};
+
+const getAdaptiveLineHeight = (fontSizePx: number, minFontPx: number, maxFontPx: number) => {
+  const range = maxFontPx - minFontPx || 1;
+  const normalized = (fontSizePx - minFontPx) / range;
+  return Number((1.26 - normalized * 0.12).toFixed(2));
+};
+
+type AdaptiveTextLayout = {
+  fontSizePx: number;
+  lineHeight: number;
+  hasOverflow: boolean;
+};
+
+const DEFAULT_ADAPTIVE_TEXT_LAYOUT: AdaptiveTextLayout = {
+  fontSizePx: 24,
+  lineHeight: getAdaptiveLineHeight(24, ADAPTIVE_TEXT_GLOBAL_MIN_FONT_PX, ADAPTIVE_TEXT_GLOBAL_MAX_FONT_PX),
+  hasOverflow: false,
+};
+
+const renderInteractiveText = (text: string) => {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  const sentences = normalized
+    .split(/(?<=\.(?:["']))\s+|(?<=\.)\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  return (sentences.length ? sentences : [normalized]).map((sentence, sentenceIdx) => {
+    const tokens = sentence.split(/(\s+)/);
+    return (
+      <span key={`sentence-${sentenceIdx}`} className="block mb-1.5 last:mb-0">
+        {tokens.map((token, tokenIdx) => {
+          if (/^\s+$/.test(token)) {
+            return <span key={`space-${sentenceIdx}-${tokenIdx}`}>{token}</span>;
+          }
+          return (
+            <span
+              key={`word-${sentenceIdx}-${tokenIdx}`}
+              className="inline-block transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:scale-[1.03]"
+            >
+              {token}
+            </span>
+          );
+        })}
+      </span>
+    );
+  });
+};
+
+type AdaptiveSectionTextProps = {
+  text: string;
+  textColorClass: string;
+  className?: string;
+};
+
+const AdaptiveSectionText = ({ text, textColorClass, className = "" }: AdaptiveSectionTextProps) => {
+  const outerRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const measureRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const [layout, setLayout] = useState<AdaptiveTextLayout>(DEFAULT_ADAPTIVE_TEXT_LAYOUT);
+
+  useLayoutEffect(() => {
+    const outer = outerRef.current;
+    const viewport = viewportRef.current;
+    const measure = measureRef.current;
+    if (!outer || !viewport || !measure) {
+      return;
+    }
+
+    const evaluateSize = (fontSizePx: number, minFontPx: number, maxFontPx: number) => {
+      const roundedFontSize = Math.round(fontSizePx / ADAPTIVE_TEXT_PRECISION_PX) * ADAPTIVE_TEXT_PRECISION_PX;
+      const lineHeight = getAdaptiveLineHeight(roundedFontSize, minFontPx, maxFontPx);
+      measure.style.width = `${viewport.clientWidth}px`;
+      measure.style.fontSize = `${roundedFontSize}px`;
+      measure.style.lineHeight = String(lineHeight);
+
+      const fitsHeight = measure.scrollHeight <= viewport.clientHeight + ADAPTIVE_TEXT_EPSILON_PX;
+      const fitsWidth = measure.scrollWidth <= viewport.clientWidth + ADAPTIVE_TEXT_EPSILON_PX;
+
+      return {
+        fontSizePx: roundedFontSize,
+        lineHeight,
+        fits: fitsHeight && fitsWidth,
+      };
+    };
+
+    const recompute = () => {
+      if (!viewport.clientWidth) {
+        return;
+      }
+
+      const bounds = getAdaptiveFontBounds(viewport.clientWidth, viewport.clientHeight);
+
+      if (!viewport.clientHeight) {
+        setLayout((prev) =>
+          prev.fontSizePx === bounds.maxFontPx &&
+          prev.lineHeight === getAdaptiveLineHeight(bounds.maxFontPx, bounds.minFontPx, bounds.maxFontPx) &&
+          prev.hasOverflow === DEFAULT_ADAPTIVE_TEXT_LAYOUT.hasOverflow
+            ? prev
+            : {
+                fontSizePx: bounds.maxFontPx,
+                lineHeight: getAdaptiveLineHeight(bounds.maxFontPx, bounds.minFontPx, bounds.maxFontPx),
+                hasOverflow: false,
+              }
+        );
+        return;
+      }
+
+      const maxResult = evaluateSize(bounds.maxFontPx, bounds.minFontPx, bounds.maxFontPx);
+      if (maxResult.fits) {
+        setLayout((prev) =>
+          prev.fontSizePx === maxResult.fontSizePx &&
+          prev.lineHeight === maxResult.lineHeight &&
+          prev.hasOverflow === false
+            ? prev
+            : { ...maxResult, hasOverflow: false }
+        );
+        return;
+      }
+
+      let low = bounds.minFontPx;
+      let high = bounds.maxFontPx;
+      let best = evaluateSize(bounds.minFontPx, bounds.minFontPx, bounds.maxFontPx);
+
+      while (high - low > ADAPTIVE_TEXT_PRECISION_PX) {
+        const mid = (low + high) / 2;
+        const result = evaluateSize(mid, bounds.minFontPx, bounds.maxFontPx);
+        if (result.fits) {
+          best = result;
+          low = mid;
+        } else {
+          high = mid;
+        }
+      }
+
+      const minResult = evaluateSize(bounds.minFontPx, bounds.minFontPx, bounds.maxFontPx);
+      const nextLayout = minResult.fits ? { ...best, hasOverflow: false } : { ...minResult, hasOverflow: true };
+
+      setLayout((prev) =>
+        Math.abs(prev.fontSizePx - nextLayout.fontSizePx) < 0.01 &&
+        Math.abs(prev.lineHeight - nextLayout.lineHeight) < 0.01 &&
+        prev.hasOverflow === nextLayout.hasOverflow
+          ? prev
+          : nextLayout
+      );
+    };
+
+    const schedule = () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+      frameRef.current = window.requestAnimationFrame(recompute);
+    };
+
+    schedule();
+
+    const resizeObserver = new ResizeObserver(schedule);
+
+    resizeObserver.observe(outer);
+    resizeObserver.observe(viewport);
+
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(schedule).catch(() => {});
+    }
+
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+      resizeObserver.disconnect();
+    };
+  }, [text]);
+
+  return (
+    <div
+      ref={outerRef}
+      className={className}
+    >
+      <div
+        ref={viewportRef}
+        className={`relative h-full w-full min-w-0 overflow-x-hidden ${layout.hasOverflow ? "overflow-y-auto" : "overflow-y-hidden"}`}
+        data-has-overflow={layout.hasOverflow ? "true" : "false"}
+        style={{ scrollbarGutter: "stable" }}
+      >
+        <div
+          ref={measureRef}
+          aria-hidden="true"
+          className={`invisible pointer-events-none absolute left-0 top-0 w-full section-text-vivid font-body font-black ${textColorClass} break-words`}
+        >
+          {renderInteractiveText(text)}
+        </div>
+        <p
+          className={`section-text-vivid font-body font-black ${textColorClass} break-words w-full ${layout.hasOverflow ? "pr-2" : ""}`}
+          style={{ fontSize: `${layout.fontSizePx}px`, lineHeight: layout.lineHeight }}
+        >
+          {renderInteractiveText(text)}
+        </p>
+      </div>
+    </div>
+  );
+};
 
 const normalizeAudioError = (raw: string, status?: number) => {
   const text = String(raw || "").trim();
@@ -81,7 +307,7 @@ const normalizeAudioError = (raw: string, status?: number) => {
     lowered.includes("free tier");
 
   if (isRateLimited) {
-    return TTS_LIMIT_MESSAGE;
+    return AUDIO_RATE_LIMIT_MESSAGE;
   }
 
   if (message.startsWith("{")) {
@@ -107,6 +333,9 @@ const BookDetail = () => {
   const [showSamplePopup, setShowSamplePopup] = useState(false);
   const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioAbortControllerRef = useRef<AbortController | null>(null);
+  const audioObjectUrlRef = useRef<string | null>(null);
+  const audioRequestVersionRef = useRef(0);
   const suppressAudioErrorRef = useRef(false);
 
   const shouldPoll = useMemo(
@@ -195,10 +424,12 @@ const BookDetail = () => {
         setShowLimitPopup(true);
         return;
       }
+      stopAudio();
       setSearchParams({ page: String(pageNumber + 1) });
       return;
     }
 
+    stopAudio();
     setCreatingNext(true);
     setError("");
 
@@ -222,11 +453,30 @@ const BookDetail = () => {
 
   const handlePrevious = () => {
     const previous = Math.max(1, pageNumber - 1);
+    if (previous !== pageNumber) {
+      stopAudio();
+    }
     setError("");
     setSearchParams({ page: String(previous) });
   };
 
+  const releaseAudioUrl = (objectUrl: string | null) => {
+    if (!objectUrl) {
+      return;
+    }
+
+    if (audioObjectUrlRef.current === objectUrl) {
+      audioObjectUrlRef.current = null;
+    }
+
+    URL.revokeObjectURL(objectUrl);
+  };
+
   const stopAudio = () => {
+    audioRequestVersionRef.current += 1;
+    audioAbortControllerRef.current?.abort();
+    audioAbortControllerRef.current = null;
+
     const audio = audioRef.current;
     if (audio) {
       suppressAudioErrorRef.current = true;
@@ -237,6 +487,8 @@ const BookDetail = () => {
       audio.load();
       audioRef.current = null;
     }
+
+    releaseAudioUrl(audioObjectUrlRef.current);
     setAudioState("idle");
   };
 
@@ -264,9 +516,19 @@ const BookDetail = () => {
     setAudioState("loading");
     setError("");
     try {
+      const requestVersion = audioRequestVersionRef.current + 1;
+      audioRequestVersionRef.current = requestVersion;
       suppressAudioErrorRef.current = false;
+      audioAbortControllerRef.current?.abort();
+      const abortController = new AbortController();
+      audioAbortControllerRef.current = abortController;
       const audioUrl = `${getPageAudioUrl(id, pageNumber)}?ts=${Date.now()}`;
-      const response = await fetch(audioUrl);
+      const token = localStorage.getItem("bright_minds_auth_token") || "";
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(audioUrl, { headers, signal: abortController.signal });
+      if (requestVersion !== audioRequestVersionRef.current) {
+        return;
+      }
       if (!response.ok) {
         const body = await response.text();
         const normalizedMessage = normalizeAudioError(body, response.status);
@@ -283,60 +545,60 @@ const BookDetail = () => {
       if (!audioBlob.size) {
         throw new Error("Audio response was empty.");
       }
+      if (requestVersion !== audioRequestVersionRef.current) {
+        return;
+      }
 
       const objectUrl = URL.createObjectURL(audioBlob);
+      audioObjectUrlRef.current = objectUrl;
       const audio = new Audio(objectUrl);
       audioRef.current = audio;
       audio.onended = () => {
-        URL.revokeObjectURL(objectUrl);
-        audioRef.current = null;
-        setAudioState("idle");
+        releaseAudioUrl(objectUrl);
+        if (audioRef.current === audio) {
+          audioRef.current = null;
+        }
+        if (requestVersion === audioRequestVersionRef.current) {
+          setAudioState("idle");
+        }
       };
       audio.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
+        releaseAudioUrl(objectUrl);
         if (suppressAudioErrorRef.current) {
           suppressAudioErrorRef.current = false;
           return;
         }
-        audioRef.current = null;
-        setAudioState("idle");
-        setError("Audio playback failed.");
+        if (audioRef.current === audio) {
+          audioRef.current = null;
+        }
+        if (requestVersion === audioRequestVersionRef.current) {
+          setAudioState("idle");
+          setError("Audio playback failed.");
+        }
       };
       await audio.play();
+      if (requestVersion !== audioRequestVersionRef.current || audioRef.current !== audio) {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+        releaseAudioUrl(objectUrl);
+        return;
+      }
       setAudioState("playing");
     } catch (audioError) {
+      const namedError = audioError as Error & { name?: string };
+      if (namedError.name === "AbortError") {
+        return;
+      }
+
+      const message = String(namedError.message || audioError);
       setAudioState("idle");
-      setError(String((audioError as Error).message || audioError));
+      setError(message);
+    } finally {
+      if (audioAbortControllerRef.current?.signal.aborted) {
+        audioAbortControllerRef.current = null;
+      }
     }
-  };
-
-  const renderInteractiveText = (text: string) => {
-    const normalized = text.replace(/\s+/g, " ").trim();
-    const sentences = normalized
-      .split(/(?<=\.(?:["']))\s+|(?<=\.)\s+/)
-      .map((sentence) => sentence.trim())
-      .filter(Boolean);
-
-    return (sentences.length ? sentences : [normalized]).map((sentence, sentenceIdx) => {
-      const tokens = sentence.split(/(\s+)/);
-      return (
-        <span key={`sentence-${sentenceIdx}`} className="block leading-relaxed mb-1.5 last:mb-0">
-          {tokens.map((token, tokenIdx) => {
-            if (/^\s+$/.test(token)) {
-              return <span key={`space-${sentenceIdx}-${tokenIdx}`}>{token}</span>;
-            }
-            return (
-              <span
-                key={`word-${sentenceIdx}-${tokenIdx}`}
-                className="inline-block transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:scale-[1.03]"
-              >
-                {token}
-              </span>
-            );
-          })}
-        </span>
-      );
-    });
   };
 
   if (loading) {
@@ -464,6 +726,7 @@ const BookDetail = () => {
         <div className="flex items-center gap-2 justify-end">
           <button
             onClick={handleToggleAudio}
+            data-sfx="toggle"
             disabled={audioState === "loading"}
             className="bg-brainy-yellow brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
             aria-label={audioState === "playing" ? "Stop audio" : "Play audio"}
@@ -479,6 +742,7 @@ const BookDetail = () => {
           </button>
           <button
             onClick={handlePrevious}
+            data-sfx="page"
             disabled={pageNumber <= 1}
             className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
             aria-label="Previous page"
@@ -488,6 +752,7 @@ const BookDetail = () => {
           </button>
           <button
             onClick={handleNext}
+            data-sfx="page"
             disabled={creatingNext}
             className="bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
             aria-label="Next page"
@@ -510,26 +775,21 @@ const BookDetail = () => {
             const section = sections[rowIdx];
             const imageOnLeft = rowIdx % 2 === 0;
             const imgBg = sectionColors[rowIdx];
-            const txtColor = textColors[rowIdx];
+            const txtColor = isTwentyPlusAgeGroup(book.ageGroup)
+              ? "text-black"
+              : isFifteenToTwentyAgeGroup(book.ageGroup)
+              ? textColors15To20[rowIdx]
+              : textColors[rowIdx];
             const sectionText = (section.text || "").trim();
-            const sectionTextLength = sectionText.length;
-            const sectionTextSizeClass =
-              sectionTextLength <= 180
-                ? "text-lg sm:text-xl lg:text-2xl"
-                : sectionTextLength <= 280
-                ? "text-base sm:text-lg lg:text-xl"
-                : sectionTextLength <= 420
-                ? "text-sm sm:text-base lg:text-lg"
-                : "text-xs sm:text-sm lg:text-base";
 
             return (
               <div
                 key={rowIdx}
-                className={`grid grid-cols-2 gap-3 sm:gap-4 ${
-                  imageOnLeft ? "" : "[&>*:first-child]:order-2"
+                className={`flex flex-col gap-3 sm:gap-4 lg:grid lg:grid-cols-2 ${
+                  imageOnLeft ? "" : "lg:[&>*:first-child]:order-2"
                 }`}
               >
-                <div className={`${imgBg} brutal-border brutal-shadow-sm overflow-hidden aspect-[21/9]`}>
+                <div className={`${imgBg} brutal-border brutal-shadow-sm overflow-hidden aspect-[16/10] md:aspect-[18/10] lg:aspect-[21/9]`}>
                   <PixelImageCanvas
                     pixelArray={section.imagePixelArray}
                     imageUrl={section.imageUrl}
@@ -539,11 +799,11 @@ const BookDetail = () => {
                     fallbackText={section.imagePrompt || "Generating..."}
                   />
                 </div>
-                <div className="p-3 sm:p-5 flex items-center overflow-hidden aspect-[21/9]">
-                  <p className={`section-text-vivid font-body font-black ${txtColor} ${sectionTextSizeClass} leading-snug break-words`}>
-                    {renderInteractiveText(sectionText || "Generating section text...")}
-                  </p>
-                </div>
+                <AdaptiveSectionText
+                  text={sectionText || "Generating section text..."}
+                  textColorClass={txtColor}
+                  className="p-3 sm:p-5 h-[clamp(180px,42vw,260px)] md:h-[clamp(210px,32vw,290px)] lg:h-[clamp(200px,18vw,250px)]"
+                />
               </div>
             );
           })}
