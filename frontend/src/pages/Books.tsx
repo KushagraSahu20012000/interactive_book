@@ -355,7 +355,7 @@ const Books = () => {
       </Dialog>
 
       <TopNav />
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-32 sm:pb-10">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-72 sm:pb-44">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
           <div>
             <h1 className="font-display text-5xl sm:text-7xl uppercase leading-none">

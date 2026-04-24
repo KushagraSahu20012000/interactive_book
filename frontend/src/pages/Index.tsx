@@ -121,8 +121,9 @@ const Index = () => {
           </div>
           <h1 className="font-display text-5xl sm:text-[5rem] lg:text-[6rem] uppercase leading-[0.9]">
             Learn <span className="bg-brainy-yellow brutal-border px-3 inline-block -rotate-2 brutal-shadow-sm">Bold.</span>
-            <br />
-            Stay <span className="bg-brainy-sky brutal-border px-3 inline-block rotate-1 brutal-shadow-sm">Curious.</span>
+            <span className="block mt-2 sm:mt-3">
+              Stay <span className="bg-brainy-sky brutal-border px-3 inline-block rotate-1 brutal-shadow-sm">Curious.</span>
+            </span>
           </h1>
           <p className="text-lg sm:text-xl max-w-xl font-body font-bold leading-relaxed">
             Bright Minds is a post-AI learning platform with clear, age-aware books that build understanding step by step.
