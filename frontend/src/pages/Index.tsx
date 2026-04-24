@@ -175,11 +175,11 @@ const Index = () => {
           <p className="font-body font-bold text-base sm:text-lg max-w-4xl leading-relaxed mb-6">
             Instead of generic trivia, Bright Minds focuses on the education people actually need: systems, bias, health, environment, self-knowledge, and the habits of clear thinking.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {topicTags.map((topic) => (
               <span
                 key={topic}
-                className="px-4 py-2 font-display uppercase text-sm bg-brainy-yellow brutal-border brutal-shadow-sm"
+                className="w-full px-4 py-2 font-display uppercase text-xs sm:text-sm leading-tight text-center whitespace-normal break-words bg-brainy-yellow brutal-border brutal-shadow-sm"
               >
                 {topic}
               </span>
