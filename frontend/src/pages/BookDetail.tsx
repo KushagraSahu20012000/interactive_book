@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Square, Volume2 } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Maximize2, Minimize2, Square, Volume2 } from "lucide-react";
 import { getBookPage, getBookPages, getPageAudioUrl, requestNextPage } from "@/lib/api";
 import { getAuthToken, getGuestKey, isAuthenticated as hasAuthSession } from "@/lib/auth";
 import { socket } from "@/lib/socket";
@@ -58,13 +58,15 @@ type SampleBookCacheEntry = {
 };
 
 const sectionColors = ["bg-brainy-yellow", "bg-brainy-sky", "bg-brainy-lime"];
-const textColors = ["text-[#ff0f7b]", "text-[#ff5a1f]", "text-[#5b2ca0]"];
-const textColors15To20 = ["text-[#d10d64]", "text-[#d94a14]", "text-[#4b2485]"];
+const textColors5To10 = ["text-[#ff0f7b]", "text-[#ff5a1f]", "text-[#5b2ca0]"];
+const textColors10To15 = ["text-[#a63a65]", "text-[#a34f2b]", "text-[#4a2f79]"];
+const textColors15To20 = ["text-[#a63a65]", "text-[#a34f2b]", "text-[#4a2f79]"];
 const MAX_PAGE_LIMIT_MESSAGE = "Maximum page limit reached (10 pages).";
 const AUDIO_RATE_LIMIT_MESSAGE = "Audio is temporarily unavailable due to API limits.";
 
 const isTwentyPlusAgeGroup = (ageGroup?: string) => String(ageGroup || "").trim() === "20+";
 const isFifteenToTwentyAgeGroup = (ageGroup?: string) => String(ageGroup || "").trim() === "15-20";
+const isFiveToTenAgeGroup = (ageGroup?: string) => String(ageGroup || "").trim() === "5-10";
 
 const ADAPTIVE_TEXT_GLOBAL_MIN_FONT_PX = 12;
 const ADAPTIVE_TEXT_GLOBAL_MAX_FONT_PX = 25;
@@ -176,11 +178,20 @@ const renderInteractiveText = (text: string) => {
 type AdaptiveSectionTextProps = {
   text: string;
   textColorClass: string;
+  textStyleClass?: string;
   className?: string;
+  containerStyle?: CSSProperties;
   centerContent?: boolean;
 };
 
-const AdaptiveSectionText = ({ text, textColorClass, className = "", centerContent = false }: AdaptiveSectionTextProps) => {
+const AdaptiveSectionText = ({
+  text,
+  textColorClass,
+  textStyleClass = "",
+  className = "",
+  containerStyle,
+  centerContent = false,
+}: AdaptiveSectionTextProps) => {
   const outerRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const measureRef = useRef<HTMLDivElement | null>(null);
@@ -303,6 +314,7 @@ const AdaptiveSectionText = ({ text, textColorClass, className = "", centerConte
     <div
       ref={outerRef}
       className={className}
+      style={containerStyle}
     >
       <div
         ref={viewportRef}
@@ -313,13 +325,13 @@ const AdaptiveSectionText = ({ text, textColorClass, className = "", centerConte
         <div
           ref={measureRef}
           aria-hidden="true"
-          className={`invisible pointer-events-none absolute left-0 top-0 w-full section-text-vivid font-body font-black ${textColorClass} break-words`}
+          className={`invisible pointer-events-none absolute left-0 top-0 w-full section-text-vivid font-body font-black ${textStyleClass} ${textColorClass} break-words`}
         >
           {renderInteractiveText(text)}
         </div>
         <div className={centerContent && !layout.hasOverflow ? "h-full flex items-center" : ""}>
           <p
-            className={`section-text-vivid font-body font-black ${textColorClass} break-words w-full ${layout.hasOverflow ? "pr-2" : ""}`}
+            className={`section-text-vivid font-body font-black ${textStyleClass} ${textColorClass} break-words w-full ${layout.hasOverflow ? "pr-2" : ""}`}
             style={{ fontSize: `${layout.fontSizePx}px`, lineHeight: layout.lineHeight }}
           >
             {renderInteractiveText(text)}
@@ -382,7 +394,11 @@ const BookDetail = () => {
   const [showLimitPopup, setShowLimitPopup] = useState(false);
   const [showSamplePopup, setShowSamplePopup] = useState(false);
   const [audioState, setAudioState] = useState<"idle" | "loading" | "playing">("idle");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [fullscreenPanelSize, setFullscreenPanelSize] = useState<{ width: number; height: number } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fullscreenGridRef = useRef<HTMLDivElement | null>(null);
   const audioAbortControllerRef = useRef<AbortController | null>(null);
   const audioObjectUrlRef = useRef<string | null>(null);
   const audioRequestVersionRef = useRef(0);
@@ -585,6 +601,91 @@ const BookDetail = () => {
   useEffect(() => () => stopAudio(), []);
   useEffect(() => stopAudio(), [pageNumber, id]);
 
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+    syncFullscreenState();
+
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFullscreenState);
+    };
+  }, []);
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setIsMobileViewport(window.innerWidth < 640);
+    };
+
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+
+    return () => {
+      window.removeEventListener("resize", syncViewport);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isFullscreen) {
+      setFullscreenPanelSize(null);
+      return;
+    }
+
+    if (isMobileViewport) {
+      setFullscreenPanelSize(null);
+      return;
+    }
+
+    const grid = fullscreenGridRef.current;
+    if (!grid) {
+      return;
+    }
+
+    const computePanelSize = () => {
+      const styles = window.getComputedStyle(grid);
+      const rowGap = Number.parseFloat(styles.rowGap || "0") || 0;
+      const colGap = Number.parseFloat(styles.columnGap || "0") || 0;
+      const rows = 3;
+      const cols = 2;
+      const ratio = 21 / 9;
+
+      const availableHeight = Math.max(0, grid.clientHeight - rowGap * (rows - 1));
+      const availableWidth = Math.max(0, grid.clientWidth - colGap * (cols - 1));
+      const rowHeight = availableHeight / rows;
+      const colWidth = availableWidth / cols;
+
+      const panelWidth = Math.floor(Math.min(colWidth, rowHeight * ratio));
+      const panelHeight = Math.floor(panelWidth / ratio);
+
+      setFullscreenPanelSize((prev) =>
+        prev && prev.width === panelWidth && prev.height === panelHeight
+          ? prev
+          : { width: panelWidth, height: panelHeight }
+      );
+    };
+
+    computePanelSize();
+
+    const resizeObserver = new ResizeObserver(computePanelSize);
+    resizeObserver.observe(grid);
+    window.addEventListener("resize", computePanelSize);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", computePanelSize);
+    };
+  }, [isFullscreen, isMobileViewport]);
+
+  const fullscreenPanelStyle = isFullscreen
+    ? isMobileViewport
+      ? ({ width: "100%", height: "100%" } as const)
+      : fullscreenPanelSize
+      ? ({ width: `${fullscreenPanelSize.width}px`, height: `${fullscreenPanelSize.height}px` } as const)
+      : undefined
+    : undefined;
+
   const handleToggleAudio = async () => {
     if (!id || !page) {
       return;
@@ -739,7 +840,15 @@ const BookDetail = () => {
   const actionItem = (page?.actionItem || "").trim();
   const titleLength = pageTitle.length;
   const titleSizeClass =
-    titleLength <= 18
+    isFullscreen
+      ? titleLength <= 18
+        ? "text-sm sm:text-base lg:text-lg"
+        : titleLength <= 32
+        ? "text-xs sm:text-sm lg:text-base"
+        : titleLength <= 56
+        ? "text-xs sm:text-sm"
+        : "text-[11px] sm:text-xs"
+      : titleLength <= 18
       ? "text-2xl sm:text-4xl lg:text-5xl"
       : titleLength <= 32
       ? "text-xl sm:text-3xl lg:text-4xl"
@@ -747,8 +856,20 @@ const BookDetail = () => {
       ? "text-lg sm:text-2xl lg:text-3xl"
       : "text-base sm:text-xl lg:text-2xl";
 
+  const handleToggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Ignore fullscreen API failures for unsupported browsers.
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`${isFullscreen ? "h-screen overflow-hidden" : "min-h-screen"} bg-background`}>
       <AlertDialog open={showSamplePopup} onOpenChange={setShowSamplePopup}>
         <AlertDialogContent className="brutal-border bg-brainy-lime">
           <AlertDialogHeader>
@@ -792,82 +913,199 @@ const BookDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="bg-brainy-lime brutal-border border-x-0 px-3 sm:px-5 py-2 sm:py-3 grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-3">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate("/books")}
-            className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5"
-            aria-label="Back to books"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
-          </button>
-        </div>
+      {isFullscreen ? (
+        <div className="px-3 sm:px-5 py-2 sm:py-2.5 border-b-[3px] border-foreground bg-background/90">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-2 sm:gap-3">
+            <div className="min-w-0 flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => navigate("/books")}
+                className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5"
+                aria-label="Back to books"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+              </button>
 
-        <div className="min-w-0 text-center px-2">
-          <h1
-            className={`font-display ${titleSizeClass} uppercase leading-tight break-words`}
-            title={pageTitle}
-          >
-            {isTitlePending ? (
-              <span className="inline-flex items-center gap-2 text-foreground/70">
-                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" strokeWidth={3} />
-                Generating title...
-              </span>
-            ) : (
-              pageTitle
-            )}
-          </h1>
-          <p className="font-bold text-xs sm:text-sm uppercase tracking-wide truncate">{book.title}</p>
-        </div>
+              <div className="min-w-0">
+                <h1
+                  className={`font-display ${titleSizeClass} uppercase leading-tight break-words`}
+                  title={pageTitle}
+                >
+                  {isTitlePending ? (
+                    <span className="inline-flex items-center gap-1.5 text-foreground/70">
+                      <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" strokeWidth={3} />
+                      Generating title...
+                    </span>
+                  ) : (
+                    pageTitle
+                  )}
+                </h1>
+                <p className="font-bold text-[10px] sm:text-xs uppercase tracking-wide truncate text-foreground/70">{book.title}</p>
+              </div>
+            </div>
 
-        <div className="flex items-center gap-2 justify-end">
-          <button
-            onClick={handleToggleAudio}
-            data-sfx="toggle"
-            disabled={audioState === "loading"}
-            className="bg-brainy-yellow brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
-            aria-label={audioState === "playing" ? "Stop audio" : "Play audio"}
-            title={audioState === "playing" ? "Stop audio" : "Read this page aloud"}
-          >
-            {audioState === "loading" ? (
-              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
-            ) : audioState === "playing" ? (
-              <Square className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
-            ) : (
-              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
-            )}
-          </button>
-          <button
-            onClick={handlePrevious}
-            data-sfx="page"
-            disabled={pageNumber <= 1}
-            className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
-            aria-label="Previous page"
-            title="Previous page"
-          >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
-          </button>
-          <button
-            onClick={handleNext}
-            data-sfx="page"
-            disabled={creatingNext}
-            className="bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
-            aria-label="Next page"
-            title="Next page"
-          >
-            {creatingNext ? (
-              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
-            ) : (
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
-            )}
-          </button>
+            <div className="flex items-center gap-1.5 sm:gap-2 justify-end">
+              <button
+                onClick={handleToggleFullscreen}
+                data-sfx="toggle"
+                className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2"
+                aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+                title={isFullscreen ? "Exit full screen" : "Enter full screen"}
+              >
+                {isFullscreen ? (
+                  <>
+                    <Minimize2 className="hidden sm:block w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+                    <Maximize2 className="sm:hidden w-4 h-4" strokeWidth={3} />
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="hidden sm:block w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+                    <Minimize2 className="sm:hidden w-4 h-4" strokeWidth={3} />
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleToggleAudio}
+                data-sfx="toggle"
+                disabled={audioState === "loading"}
+                className="bg-brainy-yellow brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
+                aria-label={audioState === "playing" ? "Stop audio" : "Play audio"}
+                title={audioState === "playing" ? "Stop audio" : "Read this page aloud"}
+              >
+                {audioState === "loading" ? (
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
+                ) : audioState === "playing" ? (
+                  <Square className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+                ) : (
+                  <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+                )}
+              </button>
+              <button
+                onClick={handlePrevious}
+                data-sfx="page"
+                disabled={pageNumber <= 1}
+                className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
+                aria-label="Previous page"
+                title="Previous page"
+              >
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+              </button>
+              <button
+                onClick={handleNext}
+                data-sfx="page"
+                disabled={creatingNext}
+                className="bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
+                aria-label="Next page"
+                title="Next page"
+              >
+                {creatingNext ? (
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
+                ) : (
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-brainy-lime brutal-border border-x-0 px-3 sm:px-5 py-2 sm:py-3 grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/books")}
+              className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5"
+              aria-label="Back to books"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+            </button>
+          </div>
+
+          <div className="min-w-0 text-center px-2">
+            <h1
+              className={`font-display ${titleSizeClass} uppercase leading-tight break-words`}
+              title={pageTitle}
+            >
+              {isTitlePending ? (
+                <span className="inline-flex items-center gap-2 text-foreground/70">
+                  <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" strokeWidth={3} />
+                  Generating title...
+                </span>
+              ) : (
+                pageTitle
+              )}
+            </h1>
+            <p className="font-bold text-xs sm:text-sm uppercase tracking-wide truncate">{book.title}</p>
+          </div>
+
+          <div className="flex items-center gap-2 justify-end">
+            <button
+              onClick={handleToggleFullscreen}
+              data-sfx="toggle"
+              className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2"
+              aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+              title={isFullscreen ? "Exit full screen" : "Enter full screen"}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="hidden sm:block w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+                  <Maximize2 className="sm:hidden w-4 h-4" strokeWidth={3} />
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="hidden sm:block w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+                  <Minimize2 className="sm:hidden w-4 h-4" strokeWidth={3} />
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleToggleAudio}
+              data-sfx="toggle"
+              disabled={audioState === "loading"}
+              className="bg-brainy-yellow brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
+              aria-label={audioState === "playing" ? "Stop audio" : "Play audio"}
+              title={audioState === "playing" ? "Stop audio" : "Read this page aloud"}
+            >
+              {audioState === "loading" ? (
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
+              ) : audioState === "playing" ? (
+                <Square className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+              ) : (
+                <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+              )}
+            </button>
+            <button
+              onClick={handlePrevious}
+              data-sfx="page"
+              disabled={pageNumber <= 1}
+              className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
+              aria-label="Previous page"
+              title="Previous page"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+            </button>
+            <button
+              onClick={handleNext}
+              data-sfx="page"
+              disabled={creatingNext}
+              className="bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press p-1.5 sm:p-2 disabled:opacity-50"
+              aria-label="Next page"
+              title="Next page"
+            >
+              {creatingNext ? (
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" strokeWidth={3} />
+              ) : (
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       {error ? <p className="px-6 pt-3 text-red-700 font-bold">{error}</p> : null}
 
-      <div className="px-3 sm:px-6 py-3 sm:py-4">
-        <div className="max-w-6xl mx-auto flex flex-col gap-3 sm:gap-4 pb-16">
+      <div className={`${isFullscreen ? "h-[calc(100vh-56px)] sm:h-[calc(100vh-62px)] overflow-hidden px-2.5 sm:px-3 pt-2 pb-3 sm:pb-4" : "px-3 sm:px-6 py-3 sm:py-4"}`}>
+        <div
+          ref={fullscreenGridRef}
+          className={`${isFullscreen ? "h-full max-w-none mx-auto grid grid-rows-3 gap-2" : "max-w-6xl mx-auto flex flex-col gap-3 sm:gap-4 pb-16"}`}
+        >
           {[0, 1, 2].map((rowIdx) => {
             const section = sections[rowIdx];
             const imageOnLeft = rowIdx % 2 === 0;
@@ -876,17 +1114,41 @@ const BookDetail = () => {
               ? "text-black"
               : isFifteenToTwentyAgeGroup(book.ageGroup)
               ? textColors15To20[rowIdx]
-              : textColors[rowIdx];
+              : isFiveToTenAgeGroup(book.ageGroup)
+              ? textColors5To10[rowIdx]
+              : textColors10To15[rowIdx];
+            const textStyleClass = isFifteenToTwentyAgeGroup(book.ageGroup)
+              ? "section-text-15-20-mature"
+              : isTwentyPlusAgeGroup(book.ageGroup)
+              ? "section-text-20-plus"
+              : isFiveToTenAgeGroup(book.ageGroup)
+              ? "section-text-5-10-bright"
+              : "section-text-10-15-mature";
             const sectionText = (section.text || "").trim();
 
             return (
               <div
                 key={`${pageNumber}-${rowIdx}`}
-                className={`flex flex-col gap-3 sm:gap-4 lg:grid lg:grid-cols-2 ${
-                  imageOnLeft ? "" : "lg:[&>*:first-child]:order-2"
+                className={`${
+                  isFullscreen
+                    ? isMobileViewport
+                      ? "min-h-0 overflow-hidden grid grid-cols-2 gap-2 items-stretch"
+                      : "min-h-0 overflow-hidden grid [grid-template-columns:max-content_max-content] gap-2 items-stretch justify-center"
+                    : "flex flex-col gap-3 sm:gap-4 lg:grid lg:grid-cols-2"
+                } ${
+                  imageOnLeft ? "" : isFullscreen ? "[&>*:first-child]:order-2" : "lg:[&>*:first-child]:order-2"
                 }`}
               >
-                <div className={`${imgBg} brutal-border brutal-shadow-sm overflow-hidden aspect-[16/10] md:aspect-[18/10] lg:aspect-[21/9]`}>
+                <div
+                  className={`${imgBg} brutal-border brutal-shadow-sm overflow-hidden ${
+                    isFullscreen
+                      ? isMobileViewport
+                        ? "min-w-0 min-h-0 w-full h-full"
+                        : "shrink-0"
+                      : "aspect-[16/10] md:aspect-[18/10] lg:aspect-[21/9]"
+                  }`}
+                  style={fullscreenPanelStyle}
+                >
                   <PixelImageCanvas
                     pixelArray={section.imagePixelArray}
                     imageUrl={section.imageUrl}
@@ -899,14 +1161,22 @@ const BookDetail = () => {
                 <AdaptiveSectionText
                   text={sectionText || "Generating section text..."}
                   textColorClass={txtColor}
+                  textStyleClass={textStyleClass}
                   centerContent={Boolean(book.isSample)}
-                  className="p-3 sm:p-5 h-[clamp(180px,42vw,260px)] md:h-[clamp(210px,32vw,290px)] lg:h-[clamp(200px,18vw,250px)]"
+                  containerStyle={fullscreenPanelStyle}
+                  className={`${
+                    isFullscreen
+                      ? isMobileViewport
+                        ? "min-w-0 min-h-0 w-full h-full overflow-hidden p-2 sm:p-2.5"
+                        : "shrink-0 p-2.5 sm:p-3"
+                      : "p-3 sm:p-5 h-[clamp(180px,42vw,260px)] md:h-[clamp(210px,32vw,290px)] lg:h-[clamp(200px,18vw,250px)]"
+                  }`}
                 />
               </div>
             );
           })}
 
-          {actionItem ? (
+          {!isFullscreen && actionItem ? (
             <div className="bg-card brutal-border brutal-shadow-sm px-3 py-2 sm:px-4 sm:py-3">
               <p className="font-body font-bold text-sm sm:text-base leading-snug">
                 <span className="font-display uppercase text-xs sm:text-sm mr-2">Action Item:</span>

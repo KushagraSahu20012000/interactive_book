@@ -106,4 +106,32 @@
       0 1px 0 rgba(0, 0, 0, 0.35),
       0 0 6px rgba(255, 255, 255, 0.45);
   }
+
+  .section-text-10-15-mature {
+    letter-spacing: -0.015em;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.2),
+      1px 1px 0 rgba(0, 0, 0, 0.32);
+  }
+
+  .section-text-5-10-bright {
+    letter-spacing: -0.012em;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.3),
+      1px 1px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  .section-text-15-20-mature {
+    letter-spacing: -0.02em;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.1),
+      1px 1px 0 rgba(0, 0, 0, 0.45);
+  }
+
+  .section-text-20-plus {
+    letter-spacing: -0.01em;
+    text-shadow:
+      1px 1px 0 rgba(255, 255, 255, 0.1),
+      1px 2px 0 rgba(0, 0, 0, 0.3);
+  }
 }

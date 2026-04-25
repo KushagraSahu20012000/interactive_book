@@ -106,6 +106,29 @@ export function createBooksRouter(io) {
         return res.status(400).json({ message: "topic is required" });
       }
 
+      const identityFilter = userId
+        ? { userId }
+        : { guestKey };
+
+      const existingInProgressBook = await Book.findOne({
+        ...identityFilter,
+        topic: normalizedTopic,
+        ageGroup,
+        neurotype,
+        language,
+        status: { $in: ["queued", "generating"] }
+      }).sort({ createdAt: -1 });
+
+      if (existingInProgressBook) {
+        const existingLatestPage = await Page.findOne({ bookId: existingInProgressBook._id }).sort({ pageNumber: -1 });
+        return res.status(200).json({
+          bookId: String(existingInProgressBook._id),
+          pageId: existingLatestPage ? String(existingLatestPage._id) : "",
+          aiJobId: existingLatestPage?.aiJobId || "",
+          reused: true
+        });
+      }
+
       const book = await Book.create({
         userId: userId || undefined,
         guestKey,

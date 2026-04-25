@@ -7,6 +7,7 @@ on:
     paths:
       - "backend/**"
       - "Assets/sample books/environment - 5-10/**"
+      - "Assets/sample books/Non-Duality 10-15/**"
       - ".github/workflows/deploy-hf-backend-space.yml"
   workflow_dispatch:
 
@@ -71,13 +72,21 @@ jobs:
             --exclude ".env" \
             "$GITHUB_WORKSPACE/backend/" "$WORKDIR/"
 
-          ASSETS_SUBDIR="Assets/sample books/environment - 5-10"
-          if [ -d "$GITHUB_WORKSPACE/$ASSETS_SUBDIR" ]; then
+          ASSETS_ROOT="Assets/sample books"
+          if [ -d "$GITHUB_WORKSPACE/$ASSETS_ROOT" ]; then
             rm -rf "$WORKDIR/Assets"
-            mkdir -p "$WORKDIR/$ASSETS_SUBDIR"
-            rsync -av --delete \
-              --exclude ".git" \
-              "$GITHUB_WORKSPACE/$ASSETS_SUBDIR/" "$WORKDIR/$ASSETS_SUBDIR/"
+            mkdir -p "$WORKDIR/$ASSETS_ROOT"
+
+            for SAMPLE_DIR in "environment - 5-10" "Non-Duality 10-15"; do
+              SRC_DIR="$GITHUB_WORKSPACE/$ASSETS_ROOT/$SAMPLE_DIR"
+              DEST_DIR="$WORKDIR/$ASSETS_ROOT/$SAMPLE_DIR"
+              if [ -d "$SRC_DIR" ]; then
+                mkdir -p "$DEST_DIR"
+                rsync -av --delete \
+                  --exclude ".git" \
+                  "$SRC_DIR/" "$DEST_DIR/"
+              fi
+            done
           else
             rm -rf "$WORKDIR/Assets"
           fi

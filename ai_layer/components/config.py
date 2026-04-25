@@ -40,7 +40,7 @@ AGE_TEMPERATURES = {"5-10": 0.70, "10-15": 0.65, "15-20": 0.45, "20+": 0.35}
 TTS_DEFAULT_LANGUAGE = "English"
 TTS_MAX_TEXT_LENGTH = 4000
 
-TTS_ENGLISH_VOICE = get_env("GROQ_TTS_VOICE_ENGLISH", "diana")
+TTS_ENGLISH_VOICE = get_env("GROQ_TTS_VOICE_ENGLISH", "autumn")
 TTS_HINDI_VOICE = get_env("GROQ_TTS_VOICE_HINDI", "lulwa")
 
 TTS_ENGLISH_MODEL = get_env("GROQ_TTS_MODEL_ENGLISH", get_env("GROQ_TTS_MODEL", "canopylabs/orpheus-v1-english"))
