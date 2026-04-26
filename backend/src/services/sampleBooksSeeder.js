@@ -3,7 +3,7 @@ import path from "node:path";
 import { SampleBook } from "../models/SampleBook.js";
 import { SamplePage } from "../models/SamplePage.js";
 
-const SAMPLE_BOOK_CONFIGS = [
+export const SAMPLE_BOOK_CONFIGS = [
   {
     slug: "environment-for-5-10",
     directory: "environment - 5-10",
@@ -26,12 +26,21 @@ const SAMPLE_BOOK_CONFIGS = [
   }
 ];
 export const SAMPLE_ASSET_BASE_ROUTE = "/sample-assets";
+export const SAMPLE_AUDIO_FILE_CANDIDATES = [
+  "audio.wav",
+  "audio.mp3",
+  "audio.m4a",
+  "audio.ogg",
+  "audio.webm",
+  "page audio.wav",
+  "page audio.mp3"
+];
 
 function normalizeTextBlock(text) {
   return text.replace(/\r\n/g, "\n").replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function parseSectionText(raw) {
+export function parseSectionText(raw) {
   const chunks = raw
     .split(/\r?\n\s*\r?\n/g)
     .map((chunk) => normalizeTextBlock(chunk))
@@ -92,6 +101,64 @@ async function resolveSampleBookAssets(directory) {
   } catch {
     return null;
   }
+}
+
+function getSampleBookConfigBySlug(slug) {
+  return SAMPLE_BOOK_CONFIGS.find((config) => config.slug === slug) || null;
+}
+
+export async function resolveSampleBookAssetsBySlug(slug) {
+  const config = getSampleBookConfigBySlug(slug);
+  if (!config) {
+    return null;
+  }
+
+  return resolveSampleBookAssets(config.directory);
+}
+
+export async function resolveSamplePageDirectory(sampleBookOrSlug, pageNumber) {
+  const slug = typeof sampleBookOrSlug === "string" ? sampleBookOrSlug : sampleBookOrSlug?.slug;
+  const normalizedPageNumber = Number(pageNumber);
+
+  if (!slug || !normalizedPageNumber) {
+    return null;
+  }
+
+  const resolvedAssets = await resolveSampleBookAssetsBySlug(slug);
+  if (!resolvedAssets) {
+    return null;
+  }
+
+  const entries = await fs.readdir(resolvedAssets.sampleRoot, { withFileTypes: true });
+  const pageDirEntry = entries.find(
+    (entry) => entry.isDirectory() && new RegExp(`^page\\s+${normalizedPageNumber}$`, "i").test(entry.name)
+  );
+
+  if (!pageDirEntry) {
+    return null;
+  }
+
+  return {
+    ...resolvedAssets,
+    pageDir: path.join(resolvedAssets.sampleRoot, pageDirEntry.name)
+  };
+}
+
+export async function findSamplePageAudioAsset(sampleBookOrSlug, pageNumber) {
+  const resolvedPage = await resolveSamplePageDirectory(sampleBookOrSlug, pageNumber);
+  if (!resolvedPage) {
+    return null;
+  }
+
+  const audioPath = await findFirstExistingFile(resolvedPage.pageDir, SAMPLE_AUDIO_FILE_CANDIDATES);
+  if (!audioPath) {
+    return null;
+  }
+
+  return {
+    ...resolvedPage,
+    audioPath
+  };
 }
 
 function toPublicAssetUrl(assetsRoot, filePath) {

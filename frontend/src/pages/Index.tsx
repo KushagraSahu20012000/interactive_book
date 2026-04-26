@@ -86,6 +86,10 @@ const workflowSteps = [
 
 const topicTags = topicPresets.map((topicPreset) => topicPreset.topic);
 
+const getTopicChipMinWidth = (topic: string) => {
+  return Math.min(260, Math.max(112, Math.round(topic.length * 9.5)));
+};
+
 const Index = () => {
   const [hasSession, setHasSession] = useState(hasActiveSession());
   const [showMascot, setShowMascot] = useState(false);
@@ -175,11 +179,12 @@ const Index = () => {
           <p className="font-body font-bold text-base sm:text-lg max-w-4xl leading-relaxed mb-6">
             Instead of generic trivia, Bright Minds focuses on the education people actually need: systems, bias, health, environment, self-knowledge, and the habits of clear thinking.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="flex flex-wrap items-center gap-3 overflow-visible pb-2 pt-2">
             {topicTags.map((topic) => (
               <span
                 key={topic}
-                className="w-full px-4 py-2 font-display uppercase text-xs sm:text-sm leading-tight text-center whitespace-normal break-words bg-brainy-yellow brutal-border brutal-shadow-sm"
+                className="inline-flex shrink-0 justify-center bg-brainy-yellow px-4 py-2 font-display uppercase leading-none text-center whitespace-nowrap brutal-border brutal-shadow-sm text-[10px] sm:text-xs"
+                style={{ minWidth: `${getTopicChipMinWidth(topic)}px` }}
               >
                 {topic}
               </span>

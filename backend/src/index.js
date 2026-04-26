@@ -7,6 +7,7 @@ import { connectDB } from "./db.js";
 import { createBooksRouter } from "./routes/books.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createFeedbackRouter } from "./routes/feedback.js";
+import { createRewardsRouter } from "./routes/rewards.js";
 import { SampleBook } from "./models/SampleBook.js";
 import { SAMPLE_ASSET_BASE_ROUTE, resolveSampleAssetsRoot, seedSampleBooksFromAssets } from "./services/sampleBooksSeeder.js";
 
@@ -53,6 +54,7 @@ app.get("/health/ai", (_req, res) => {
 app.use("/api/books", createBooksRouter(io));
 app.use("/api/auth", createAuthRouter());
 app.use("/api/feedback", createFeedbackRouter());
+app.use("/api/rewards", createRewardsRouter());
 
 io.on("connection", async (socket) => {
   const sampleBooks = await SampleBook.find()

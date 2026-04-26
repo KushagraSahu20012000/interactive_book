@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "generate:sample-audio": "node scripts/generateSampleBookAudio.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

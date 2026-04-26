@@ -1,8 +1,8 @@
 import { CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Maximize2, Minimize2, Square, Volume2 } from "lucide-react";
-import { getBookPage, getBookPages, getPageAudioUrl, requestNextPage } from "@/lib/api";
-import { getAuthToken, getGuestKey, isAuthenticated as hasAuthSession } from "@/lib/auth";
+import { getBookPage, getBookPages, getPageAudioUrl, requestNextPage, trackSamplePageRead } from "@/lib/api";
+import { getAuthToken, getGuestKey, getOrCreateGuestKey, isAuthenticated as hasAuthSession } from "@/lib/auth";
 import { socket } from "@/lib/socket";
 import { PixelImageCanvas } from "@/components/PixelImageCanvas";
 import {
@@ -63,6 +63,7 @@ const textColors10To15 = ["text-[#a63a65]", "text-[#a34f2b]", "text-[#4a2f79]"];
 const textColors15To20 = ["text-[#a63a65]", "text-[#a34f2b]", "text-[#4a2f79]"];
 const MAX_PAGE_LIMIT_MESSAGE = "Maximum page limit reached (10 pages).";
 const AUDIO_RATE_LIMIT_MESSAGE = "Audio is temporarily unavailable due to API limits.";
+const MIN_SAMPLE_READ_TRACK_MS = 1000;
 
 const isTwentyPlusAgeGroup = (ageGroup?: string) => String(ageGroup || "").trim() === "20+";
 const isFifteenToTwentyAgeGroup = (ageGroup?: string) => String(ageGroup || "").trim() === "15-20";
@@ -403,6 +404,8 @@ const BookDetail = () => {
   const audioObjectUrlRef = useRef<string | null>(null);
   const audioRequestVersionRef = useRef(0);
   const suppressAudioErrorRef = useRef(false);
+  const sampleReadStartMsRef = useRef(0);
+  const sampleReadPageRef = useRef(0);
 
   const shouldPoll = useMemo(
     () => !book?.isSample && (!page || page.status === "queued" || page.status === "text_ready"),
@@ -600,6 +603,39 @@ const BookDetail = () => {
 
   useEffect(() => () => stopAudio(), []);
   useEffect(() => stopAudio(), [pageNumber, id]);
+
+  useEffect(() => {
+    if (!book?.isSample || !id) {
+      sampleReadStartMsRef.current = 0;
+      return;
+    }
+
+    if (!hasAuthSession() && !getGuestKey()) {
+      getOrCreateGuestKey();
+    }
+
+    sampleReadStartMsRef.current = Date.now();
+    sampleReadPageRef.current = pageNumber;
+
+    return () => {
+      const startedAt = sampleReadStartMsRef.current;
+      const trackedPage = sampleReadPageRef.current || pageNumber;
+      const dwellMs = Math.max(0, Date.now() - startedAt);
+      sampleReadStartMsRef.current = 0;
+
+      if (!startedAt || dwellMs < MIN_SAMPLE_READ_TRACK_MS) {
+        return;
+      }
+
+      trackSamplePageRead({
+        bookId: id,
+        pageNumber: trackedPage,
+        dwellMs,
+      }).catch(() => {
+        // Ignore reward tracking failures to avoid breaking reading flow.
+      });
+    };
+  }, [book?.isSample, id, pageNumber]);
 
   useEffect(() => {
     const syncFullscreenState = () => {

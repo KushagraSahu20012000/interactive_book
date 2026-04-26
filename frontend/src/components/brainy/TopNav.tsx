@@ -1,20 +1,24 @@
 import { NavLink } from "@/components/NavLink";
 import { useUiSound } from "@/audio/UiSoundProvider";
-import { Brain, Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 
 export const TopNav = () => {
   const { muted, toggleMuted } = useUiSound();
 
   return (
-    <nav className="sticky top-0 z-50 bg-brainy-yellow border-b-[4px] border-foreground">
+    <nav className="sticky top-0 z-50 grainy-yellow-surface border-b-[4px] border-foreground">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <NavLink
           to="/"
           className="flex items-center gap-2 group"
           activeClassName=""
         >
-          <div className="bg-brainy-pink brutal-border brutal-shadow-sm p-2 group-hover:animate-wiggle">
-            <Brain className="w-6 h-6 text-foreground" strokeWidth={3} />
+          <div className="bg-card brutal-border brutal-shadow-sm overflow-hidden group-hover:animate-wiggle">
+            <img
+              src="/logo-5.png"
+              alt="Bright Minds logo"
+              className="w-12 h-12 object-cover"
+            />
           </div>
           <span className="font-display text-2xl sm:text-3xl uppercase">Bright Minds</span>
         </NavLink>
@@ -45,7 +49,7 @@ export const TopNav = () => {
           >
             Books
           </NavLink>
-          <div className="hidden sm:flex items-center gap-1 px-3 py-2 bg-card brutal-border brutal-shadow-sm font-display text-sm">
+          <div className="flex items-center gap-1 px-3 py-2 bg-card brutal-border brutal-shadow-sm font-display text-xs sm:text-sm whitespace-nowrap">
             <span>●</span>
             <span>AI Live</span>
           </div>

@@ -2,6 +2,7 @@ import { Book } from "../models/Book.js";
 import { Page } from "../models/Page.js";
 import { GenerationTask } from "../models/GenerationTask.js";
 import { getAiJobStatus } from "./aiClient.js";
+import { awardBookCompletedPoints, getIdentityFromBook } from "./rewardsService.js";
 
 const SLEEP_MS = Number(process.env.AI_POLL_INTERVAL_MS || 1500);
 const AI_LIMIT_EXCEEDED_FALLBACK_TEXT = "Free Tier Expired. Request Upgrade!";
@@ -107,6 +108,7 @@ export async function monitorTaskLoop(taskId, io) {
         book.status = "active";
         book.currentPageNumber = Math.max(book.currentPageNumber, page.pageNumber);
         book.totalPagesGenerated = Math.max(book.totalPagesGenerated, page.pageNumber);
+        await awardBookCompletedPoints(getIdentityFromBook(book), String(book._id), page.pageNumber);
         freshTask.status = "completed";
       }
 

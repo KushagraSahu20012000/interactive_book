@@ -54,7 +54,7 @@ type UiSoundContextValue = {
 };
 
 const STORAGE_KEY = "bright-minds.ui-sound-muted";
-const ACTIVE_MASTER_GAIN = 1.3;
+const ACTIVE_MASTER_GAIN = 1.8;
 const INTERACTIVE_SELECTOR = [
   "button",
   "a[href]",
@@ -279,7 +279,7 @@ class UiSoundEngine {
       duration: 0.045,
       fromFrequency: 820,
       toFrequency: 520,
-      volume: 0.024,
+      volume: 0.036,
       type: "triangle",
     });
     this.scheduleTone(context, {
@@ -287,7 +287,7 @@ class UiSoundEngine {
       duration: 0.026,
       fromFrequency: 1400,
       toFrequency: 880,
-      volume: 0.006,
+      volume: 0.01,
       type: "sine",
     });
   }
@@ -298,7 +298,7 @@ class UiSoundEngine {
       duration: 0.05,
       fromFrequency: 650,
       toFrequency: 420,
-      volume: 0.022,
+      volume: 0.034,
       type: "triangle",
       filterType: "lowpass",
       filterFrequency: 1800,
@@ -308,7 +308,7 @@ class UiSoundEngine {
       duration: 0.024,
       fromFrequency: 1080,
       toFrequency: 760,
-      volume: 0.005,
+      volume: 0.009,
       type: "sine",
     });
   }
@@ -319,7 +319,7 @@ class UiSoundEngine {
       duration: 0.07,
       fromFrequency: 520,
       toFrequency: 720,
-      volume: 0.026,
+      volume: 0.038,
       type: "triangle",
     });
     this.scheduleTone(context, {
@@ -327,7 +327,7 @@ class UiSoundEngine {
       duration: 0.06,
       fromFrequency: 760,
       toFrequency: 560,
-      volume: 0.014,
+      volume: 0.02,
       type: "sine",
     });
   }
@@ -338,7 +338,7 @@ class UiSoundEngine {
       duration: 0.035,
       fromFrequency: 430,
       toFrequency: 560,
-      volume: 0.02,
+      volume: 0.03,
       type: "sine",
     });
     this.scheduleTone(context, {
@@ -346,7 +346,7 @@ class UiSoundEngine {
       duration: 0.03,
       fromFrequency: 620,
       toFrequency: 760,
-      volume: 0.01,
+      volume: 0.015,
       type: "triangle",
     });
   }

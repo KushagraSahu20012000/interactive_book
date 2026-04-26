@@ -1,12 +1,28 @@
+import path from "node:path";
 import { Router } from "express";
 import { Book } from "../models/Book.js";
 import { Page } from "../models/Page.js";
 import { SampleBook } from "../models/SampleBook.js";
 import { SamplePage } from "../models/SamplePage.js";
 import { GenerationTask } from "../models/GenerationTask.js";
-import { submitCreateBookJob, submitNextPageJob } from "../services/aiClient.js";
+import { AI_LIMIT_EXCEEDED_FALLBACK_TEXT, submitCreateBookJob, submitNextPageJob, synthesizeSpeech } from "../services/aiClient.js";
+import { buildPageAudioNarration, normalizeNarrationLanguage } from "../services/pageAudio.js";
+import { findSamplePageAudioAsset } from "../services/sampleBooksSeeder.js";
 import { monitorTaskLoop } from "../services/taskMonitor.js";
 import { attachAuthOptional, requireAuth } from "../middleware/auth.js";
+import { awardBookCreatedPoints, getIdentityFromRequest } from "../services/rewardsService.js";
+
+const AUDIO_CONTENT_TYPE_BY_EXTENSION = new Map([
+  [".wav", "audio/wav"],
+  [".mp3", "audio/mpeg"],
+  [".m4a", "audio/mp4"],
+  [".ogg", "audio/ogg"],
+  [".webm", "audio/webm"]
+]);
+
+function getAudioContentType(filePath) {
+  return AUDIO_CONTENT_TYPE_BY_EXTENSION.get(path.extname(filePath).toLowerCase()) || "application/octet-stream";
+}
 
 export function createBooksRouter(io) {
   const router = Router();
@@ -170,6 +186,8 @@ export function createBooksRouter(io) {
 
       monitorTaskLoop(String(task._id), io).catch((error) => console.error("Monitor loop error", error));
 
+      await awardBookCreatedPoints(getIdentityFromRequest(req), String(book._id));
+
       return res.status(201).json({
         bookId: String(book._id),
         pageId: String(page._id),
@@ -311,59 +329,42 @@ export function createBooksRouter(io) {
         return res.status(404).json({ message: "Page not found" });
       }
 
-      const sections = (page.sections || [])
-        .slice()
-        .sort((a, b) => (a.position || 0) - (b.position || 0))
-        .map((section) => (section?.text || "").trim())
-        .filter(Boolean);
+      if (isSample) {
+        const savedSampleAudio = await findSamplePageAudioAsset(book, pageNumber);
+        if (savedSampleAudio?.audioPath) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          res.type(getAudioContentType(savedSampleAudio.audioPath));
+          return res.sendFile(savedSampleAudio.audioPath);
+        }
+      }
 
-      const actionItem = (page.actionItem || "").trim();
-
-      if (sections.length === 0 && !actionItem) {
+      const aggregated = buildPageAudioNarration(page, pageNumber);
+      if (!aggregated) {
         return res.status(409).json({ message: "Page has no text yet" });
       }
 
-      const pageTitle = (page.title || "").trim() || `Page ${pageNumber}`;
-      const actionItemText = actionItem ? `Action item. ${actionItem}` : "";
-      const aggregated = `${pageTitle}. ${sections.join(" ")} ${actionItemText}`.trim();
-      const language = book.language === "Hindi" ? "Hindi" : "English";
+      const language = normalizeNarrationLanguage(book.language);
       const ttsPayload = {
         text: aggregated,
         language,
       };
-      const aiBaseUrl = process.env.AI_LAYER_URL || "http://localhost:8000";
-      const aiResponse = await fetch(`${aiBaseUrl}/tts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ttsPayload)
-      });
 
-      if (!aiResponse.ok) {
-        const detail = await aiResponse.text();
-        const lowered = detail.toLowerCase();
-        const isRateLimited =
-          aiResponse.status === 429 ||
-          lowered.includes("rate limit") ||
-          lowered.includes("rate_limit_exceeded") ||
-          lowered.includes("tokens per day") ||
-          lowered.includes("free tier");
-
-        if (isRateLimited) {
+      try {
+        const { audioBuffer, contentType } = await synthesizeSpeech(ttsPayload);
+        res.setHeader("Content-Type", contentType);
+        res.setHeader("Cache-Control", "no-store");
+        return res.send(audioBuffer);
+      } catch (audioError) {
+        if (audioError?.status === 429 || audioError?.message === AI_LIMIT_EXCEEDED_FALLBACK_TEXT) {
           return res.status(429).json({ message: "Free Tier Expired. Request Upgrade!" });
+        }
+
+        if (audioError?.message === "TTS upstream returned empty audio") {
+          return res.status(502).json({ message: "TTS upstream returned empty audio" });
         }
 
         return res.status(502).json({ message: "TTS upstream failed" });
       }
-
-      const arrayBuffer = await aiResponse.arrayBuffer();
-      if (!arrayBuffer.byteLength) {
-        return res.status(502).json({ message: "TTS upstream returned empty audio" });
-      }
-
-      const upstreamType = aiResponse.headers.get("content-type") || "audio/wav";
-      res.setHeader("Content-Type", upstreamType);
-      res.setHeader("Cache-Control", "no-store");
-      return res.send(Buffer.from(arrayBuffer));
     } catch (error) {
       return next(error);
     }
@@ -391,6 +392,59 @@ export function createBooksRouter(io) {
       return res.json({
         book: { ...book, isSample },
         pages,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.patch("/:bookId/pages/:pageNumber", async (req, res, next) => {
+    try {
+      const record = await getBookRecord(req.params.bookId, getRequesterIdentity(req));
+      if (!record) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      if (record.kind === "sample") {
+        return res.status(403).json({ message: "Sample books cannot be edited." });
+      }
+
+      const pageNumber = Number(req.params.pageNumber);
+      if (!pageNumber || pageNumber < 1) {
+        return res.status(400).json({ message: "Valid pageNumber is required." });
+      }
+
+      const rawSections = Array.isArray(req.body?.sections) ? req.body.sections : null;
+      if (!rawSections) {
+        return res.status(400).json({ message: "sections array is required." });
+      }
+
+      const page = await Page.findOne({ bookId: req.params.bookId, pageNumber });
+      if (!page) {
+        return res.status(404).json({ message: "Page not found" });
+      }
+
+      const nextSectionTextByPosition = new Map();
+      for (const section of rawSections) {
+        const position = Number(section?.position);
+        if (!position || position < 1) {
+          return res.status(400).json({ message: "Each section requires a valid position." });
+        }
+        nextSectionTextByPosition.set(position, typeof section?.text === "string" ? section.text : "");
+      }
+
+      page.sections = (page.sections || []).map((section) => ({
+        ...section.toObject(),
+        text: nextSectionTextByPosition.has(section.position)
+          ? String(nextSectionTextByPosition.get(section.position) || "")
+          : section.text,
+      }));
+
+      await page.save();
+
+      return res.json({
+        book: record.doc.toObject(),
+        page: page.toObject(),
       });
     } catch (error) {
       return next(error);

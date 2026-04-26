@@ -57,6 +57,17 @@ export function getBookPages(bookId: string) {
   return request<{ book: any; pages: Array<any> }>(`/api/books/${bookId}/pages`);
 }
 
+export function updateBookPageText(
+  bookId: string,
+  pageNumber: number,
+  payload: { sections: Array<{ position: number; text: string }> }
+) {
+  return request<{ book: any; page: any }>(`/api/books/${bookId}/pages/${pageNumber}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function requestNextPage(bookId: string, fromPageNumber?: number) {
   return request<{ pageId: string; pageNumber: number; aiJobId: string; reused?: boolean }>(`/api/books/${bookId}/next`, {
     method: "POST",
@@ -111,6 +122,38 @@ export type AuthPayload = {
     emailHash: string;
   };
 };
+
+export type RewardsStatus = {
+  points: number;
+  unlocks: {
+    canDownloadPdf: boolean;
+    canRequestPhysicalCopy: boolean;
+  };
+  progress: {
+    pointsToNextUnlock: number;
+    sampleBooksCompletedCount: number;
+  };
+};
+
+export function getRewardsStatus() {
+  return request<RewardsStatus>("/api/rewards/status");
+}
+
+export function trackSamplePageRead(payload: { bookId: string; pageNumber: number; dwellMs: number }) {
+  return request<{
+    rewards: RewardsStatus;
+    event: {
+      awardedPoints: number;
+      reason: string;
+      qualifiedPages: number;
+      requiredPages: number;
+      pageQualified: boolean;
+    };
+  }>("/api/rewards/sample-page-read", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
 
 export function registerUser(payload: { name: string; email: string; dateOfBirth: string; password: string }) {
   return request<AuthPayload>("/api/auth/register", {

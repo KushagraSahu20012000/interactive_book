@@ -13,6 +13,7 @@ const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Books = lazy(() => import("./pages/Books"));
 const BookDetail = lazy(() => import("./pages/BookDetail"));
+const BookEditor = lazy(() => import("./pages/BookEditor"));
 
 const queryClient = new QueryClient();
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -30,6 +31,7 @@ const RoutedApp = () => (
         <Route path="/" element={<Index />} />
         <Route path="/books" element={<Books />} />
         <Route path="/books/:id" element={<BookDetail />} />
+        <Route path="/books/:id/edit" element={<BookEditor />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
