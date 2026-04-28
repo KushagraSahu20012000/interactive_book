@@ -23,6 +23,16 @@ export const SAMPLE_BOOK_CONFIGS = [
     neurotype: "None",
     language: "English",
     title: "Non-Duality for 10-15"
+  },
+  {
+    slug: "aesthetics-and-design",
+    directory: "asthetics and design",
+    topic: "Aesthetics and Design",
+    description: "Creator-curated sample book exploring how taste, attention, and design patterns shape aesthetic judgment.",
+    ageGroup: "15-20",
+    neurotype: "None",
+    language: "English",
+    title: "Aesthetics and Design"
   }
 ];
 export const SAMPLE_ASSET_BASE_ROUTE = "/sample-assets";

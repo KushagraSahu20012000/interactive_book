@@ -220,6 +220,24 @@ AI layer syntax check:
 python3 -m py_compile ai_layer/components/page_generator_ai.py
 ```
 
+PDF export:
+
+```bash
+cd backend
+npm run export:pdf -- --book-id <mongo-book-id>
+```
+
+You can also export seeded sample books with `--sample-slug <slug>` and optionally set `--out <path>` for a custom file location.
+
+PowerPoint export:
+
+```bash
+cd backend
+npm run export:ppt -- --sample-slug non-duality-for-10-15
+```
+
+The PPT exporter mirrors the book page layout with alternating image and text panels so the saved deck stays close to the reading view.
+
 ## Notes
 
 - Some image workflows intentionally use stock sources depending on configuration.

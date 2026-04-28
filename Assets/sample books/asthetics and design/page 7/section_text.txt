@@ -1,0 +1,7 @@
+Aesthetics Directs Attention
+
+You may think aesthetics is about how things look. Its stronger function is control of attention. Good design guides your eyes and mind in a specific order. Poor design forces you to search without direction.
+
+Look at a page with a clear heading, subheadings, and spacing. Your eyes move predictably: title -> section -> detail. Now compare it to a page where everything is the same size and crowded. There is no clear path. You spend more effort just figuring out where to look.
+
+Aesthetic quality increases when attention is guided with precision. This is done using size, position, contrast, and spacing. When these are aligned, the viewer does not feel the effort, but their behavior is controlled.
