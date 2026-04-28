@@ -8,6 +8,7 @@ on:
       - "backend/**"
       - "Assets/sample books/environment - 5-10/**"
       - "Assets/sample books/Non-Duality 10-15/**"
+      - "Assets/sample books/asthetics and design/**"
       - ".github/workflows/deploy-hf-backend-space.yml"
   workflow_dispatch:
 
