@@ -78,7 +78,7 @@ jobs:
             rm -rf "$WORKDIR/Assets"
             mkdir -p "$WORKDIR/$ASSETS_ROOT"
 
-            for SAMPLE_DIR in "environment - 5-10" "Non-Duality 10-15"; do
+            for SAMPLE_DIR in "environment - 5-10" "Non-Duality 10-15" "asthetics and design"; do
               SRC_DIR="$GITHUB_WORKSPACE/$ASSETS_ROOT/$SAMPLE_DIR"
               DEST_DIR="$WORKDIR/$ASSETS_ROOT/$SAMPLE_DIR"
               if [ -d "$SRC_DIR" ]; then
