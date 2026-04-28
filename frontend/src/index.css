@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@400;500;600;700;800&family=Nunito:wght@400;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -126,37 +126,41 @@
     box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.18);
   }
 
-  .section-text-vivid {
-    text-shadow:
-      0 1px 0 rgba(0, 0, 0, 0.35),
-      0 0 6px rgba(255, 255, 255, 0.45);
+  .section-text-readable {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
   }
 
   .section-text-10-15-mature {
-    letter-spacing: -0.015em;
+    font-family: 'Lexend', 'Nunito', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.012em;
     text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.2),
-      1px 1px 0 rgba(0, 0, 0, 0.32);
+      0 1px 0 rgba(255, 255, 255, 0.14),
+      1px 1px 0 rgba(0, 0, 0, 0.12);
   }
 
   .section-text-5-10-bright {
-    letter-spacing: -0.012em;
+    font-family: 'Lexend', 'Nunito', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
     text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.3),
-      1px 1px 0 rgba(0, 0, 0, 0.35);
+      0 1px 0 rgba(255, 255, 255, 0.22),
+      1px 1px 0 rgba(0, 0, 0, 0.18);
   }
 
   .section-text-15-20-mature {
-    letter-spacing: -0.02em;
-    text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.1),
-      1px 1px 0 rgba(0, 0, 0, 0.45);
+    font-family: 'Atkinson Hyperlegible', 'Lexend', 'Nunito', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.006em;
+    text-shadow: none;
   }
 
   .section-text-20-plus {
-    letter-spacing: -0.01em;
-    text-shadow:
-      1px 1px 0 rgba(255, 255, 255, 0.1),
-      1px 2px 0 rgba(0, 0, 0, 0.3);
+    font-family: 'Atkinson Hyperlegible', 'Lexend', 'Nunito', system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-shadow: none;
   }
 }

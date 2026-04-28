@@ -58,9 +58,9 @@ type SampleBookCacheEntry = {
 };
 
 const sectionColors = ["bg-brainy-yellow", "bg-brainy-sky", "bg-brainy-lime"];
-const textColors5To10 = ["text-[#ff0f7b]", "text-[#ff5a1f]", "text-[#5b2ca0]"];
-const textColors10To15 = ["text-[#a63a65]", "text-[#a34f2b]", "text-[#4a2f79]"];
-const textColors15To20 = ["text-[#a63a65]", "text-[#a34f2b]", "text-[#4a2f79]"];
+const textColors5To10 = ["text-[#7a1f52]", "text-[#8a4317]", "text-[#3f2f86]"];
+const textColors10To15 = ["text-[#6c2a46]", "text-[#6e3f28]", "text-[#35265f]"];
+const textColors15To20 = ["text-[#512132]", "text-[#553120]", "text-[#2b244a]"];
 const MAX_PAGE_LIMIT_MESSAGE = "Maximum page limit reached (10 pages).";
 const AUDIO_RATE_LIMIT_MESSAGE = "Audio is temporarily unavailable due to API limits.";
 const MIN_SAMPLE_READ_TRACK_MS = 1000;
@@ -93,7 +93,7 @@ const getAdaptiveFontBounds = (width: number, height: number) => {
 const getAdaptiveLineHeight = (fontSizePx: number, minFontPx: number, maxFontPx: number) => {
   const range = maxFontPx - minFontPx || 1;
   const normalized = (fontSizePx - minFontPx) / range;
-  return Number((1.26 - normalized * 0.12).toFixed(2));
+  return Number((1.48 - normalized * 0.14).toFixed(2));
 };
 
 type AdaptiveTextLayout = {
@@ -326,13 +326,13 @@ const AdaptiveSectionText = ({
         <div
           ref={measureRef}
           aria-hidden="true"
-          className={`invisible pointer-events-none absolute left-0 top-0 w-full section-text-vivid font-body font-black ${textStyleClass} ${textColorClass} break-words`}
+          className={`invisible pointer-events-none absolute left-0 top-0 w-full section-text-readable ${textStyleClass} ${textColorClass} break-words`}
         >
           {renderInteractiveText(text)}
         </div>
         <div className={centerContent && !layout.hasOverflow ? "h-full flex items-center" : ""}>
           <p
-            className={`section-text-vivid font-body font-black ${textStyleClass} ${textColorClass} break-words w-full ${layout.hasOverflow ? "pr-2" : ""}`}
+            className={`section-text-readable ${textStyleClass} ${textColorClass} break-words w-full ${layout.hasOverflow ? "pr-2" : ""}`}
             style={{ fontSize: `${layout.fontSizePx}px`, lineHeight: layout.lineHeight }}
           >
             {renderInteractiveText(text)}
@@ -474,7 +474,7 @@ const BookDetail = () => {
         }
 
         if (!hasAuthSession() && !loadedBook.isSample) {
-          navigate("/books");
+          handleCloseBook();
         }
       })
       .catch((loadError) => setError(String(loadError.message || loadError)))
@@ -647,6 +647,11 @@ const BookDetail = () => {
 
     return () => {
       document.removeEventListener("fullscreenchange", syncFullscreenState);
+      if (document.fullscreenElement) {
+        void document.exitFullscreen().catch(() => {
+          // Ignore fullscreen API failures during route cleanup.
+        });
+      }
     };
   }, []);
 
@@ -835,6 +840,22 @@ const BookDetail = () => {
     }
   };
 
+  async function exitDocumentFullscreen() {
+    if (!document.fullscreenElement) {
+      return;
+    }
+
+    try {
+      await document.exitFullscreen();
+    } catch {
+      // Ignore fullscreen API failures for unsupported browsers.
+    }
+  }
+
+  const handleCloseBook = () => {
+    void exitDocumentFullscreen().finally(() => navigate("/books"));
+  };
+
   if (loading && !book) {
     return (
       <div className="min-h-screen bg-background">
@@ -851,7 +872,7 @@ const BookDetail = () => {
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
           <h2 className="font-display text-4xl uppercase">Book not found</h2>
           <button
-            onClick={() => navigate("/books")}
+            onClick={handleCloseBook}
             className="mt-6 font-display uppercase px-5 py-2 bg-brainy-pink text-primary-foreground brutal-border brutal-shadow-sm brutal-press"
           >
             ← Back to Books
@@ -897,7 +918,7 @@ const BookDetail = () => {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
       } else {
-        await document.exitFullscreen();
+        await exitDocumentFullscreen();
       }
     } catch {
       // Ignore fullscreen API failures for unsupported browsers.
@@ -954,7 +975,7 @@ const BookDetail = () => {
           <div className="grid grid-cols-[1fr_auto] items-center gap-2 sm:gap-3">
             <div className="min-w-0 flex items-center gap-2 sm:gap-3">
               <button
-                onClick={() => navigate("/books")}
+                onClick={handleCloseBook}
                 className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5"
                 aria-label="Back to books"
               >
@@ -1046,7 +1067,7 @@ const BookDetail = () => {
         <div className="bg-brainy-lime brutal-border border-x-0 px-3 sm:px-5 py-2 sm:py-3 grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate("/books")}
+              onClick={handleCloseBook}
               className="bg-card brutal-border brutal-shadow-sm brutal-press p-1.5"
               aria-label="Back to books"
             >
