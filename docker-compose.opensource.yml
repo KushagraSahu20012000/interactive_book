@@ -8,14 +8,21 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  ai:
+  backend:
     build:
-      context: ./ai_layer
-    container_name: bright-minds-ai
+      context: .
+      dockerfile: Dockerfile
+    container_name: bright-minds-backend
     restart: unless-stopped
+    depends_on:
+      - mongo
     environment:
-      HOST: 0.0.0.0
-      PORT: 8000
+      PORT: 4000
+      AI_PORT: 8000
+      AI_LAYER_URL: http://127.0.0.1:8000
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/bright_minds}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8080}
+      AI_POLL_INTERVAL_MS: ${AI_POLL_INTERVAL_MS:-1500}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
       HF_TOKEN: ${HF_TOKEN:-}
@@ -24,23 +31,6 @@ services:
       HF_IMAGE_MODEL: ${HF_IMAGE_MODEL:-stabilityai/stable-diffusion-xl-base-1.0}
       IMAGE_SOURCE: ${IMAGE_SOURCE:-pexels}
       PEXELS_API_KEY: ${PEXELS_API_KEY:-}
-    ports:
-      - "8000:8000"
-
-  backend:
-    build:
-      context: ./backend
-    container_name: bright-minds-backend
-    restart: unless-stopped
-    depends_on:
-      - mongo
-      - ai
-    environment:
-      PORT: 4000
-      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/bright_minds}
-      AI_LAYER_URL: ${AI_LAYER_URL:-http://ai:8000}
-      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8080}
-      AI_POLL_INTERVAL_MS: ${AI_POLL_INTERVAL_MS:-1500}
     ports:
       - "4000:4000"
 

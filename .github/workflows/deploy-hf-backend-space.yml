@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - "backend/**"
+      - "ai_layer/**"
+      - "Dockerfile"
+      - "start.sh"
       - "Assets/sample books/environment - 5-10/**"
       - "Assets/sample books/Non-Duality 10-15/**"
       - "Assets/sample books/asthetics and design/**"
@@ -67,11 +70,29 @@ jobs:
 
           git clone "$REPO_URL" "$WORKDIR"
 
+          # Backend source into the backend/ subfolder.
+          mkdir -p "$WORKDIR/backend"
           rsync -av --delete \
             --exclude ".git" \
             --exclude "node_modules" \
             --exclude ".env" \
-            "$GITHUB_WORKSPACE/backend/" "$WORKDIR/"
+            "$GITHUB_WORKSPACE/backend/" "$WORKDIR/backend/"
+
+          # AI layer source into the ai_layer/ subfolder.
+          mkdir -p "$WORKDIR/ai_layer"
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude "__pycache__" \
+            --exclude "*.pyc" \
+            --exclude ".env" \
+            --exclude ".venv" \
+            --exclude "tests" \
+            "$GITHUB_WORKSPACE/ai_layer/" "$WORKDIR/ai_layer/"
+
+          # Combined image build files + HF Space card at the Space root.
+          cp "$GITHUB_WORKSPACE/Dockerfile" "$WORKDIR/Dockerfile"
+          cp "$GITHUB_WORKSPACE/start.sh" "$WORKDIR/start.sh"
+          cp "$GITHUB_WORKSPACE/backend/README.md" "$WORKDIR/README.md"
 
           ASSETS_ROOT="Assets/sample books"
           if [ -d "$GITHUB_WORKSPACE/$ASSETS_ROOT" ]; then

@@ -3,8 +3,7 @@
 This setup runs everything yourself using Docker Compose:
 
 - Frontend (Nginx + built Vite app)
-- Backend (Node + Express)
-- AI Layer (FastAPI)
+- Backend (Node + Express) with the AI Layer (FastAPI) in the same container
 - MongoDB (local container)
 
 ## 1. Prerequisites
@@ -25,7 +24,7 @@ docker compose -f docker-compose.opensource.yml up -d --build
 
 - Frontend: `http://localhost:8080`
 - Backend health: `http://localhost:4000/health`
-- AI health: `http://localhost:8000/health`
+- AI health (proxied via backend): `http://localhost:4000/health/ai`
 
 ## 4. Optional: Use Atlas Instead of Local Mongo
 

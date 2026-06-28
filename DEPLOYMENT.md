@@ -2,100 +2,50 @@
 
 ## Recommended Option
 
-Best free/easy deployment for this architecture:
-
-- Frontend: Render Static Site (free)
-- Backend: Render Web Service (free)
-- AI Layer: Render Web Service (free)
+- Frontend: Vercel (free)
+- Backend + AI Layer: single Hugging Face Space (Docker)
 - Database: MongoDB Atlas M0 free tier
 
-Why this is the best fit:
+The backend and AI layer ship in one container (see the root [Dockerfile](Dockerfile)
+and [start.sh](start.sh)). The backend talks to the AI layer in-process at
+`http://127.0.0.1:8000`, so there is no separate AI service to manage.
 
-- Simple setup with one platform for all app services
-- Works well with Node + Python mixed architecture
-- Native environment variable management (no secrets in repo)
-- Easy logs and health checks for debugging
+Render is no longer used. For the full step-by-step, see
+[HF_VERCEL_DEPLOYMENT.md](HF_VERCEL_DEPLOYMENT.md). For a self-hosted Docker
+Compose setup, see [OPEN_SOURCE_DEPLOYMENT.md](OPEN_SOURCE_DEPLOYMENT.md).
 
 ## Security First (Must Do Before Deploy)
 
 1. Rotate all previously exposed API keys immediately.
 2. Never store real keys in `.env.example` or source files.
 3. Keep real values only in deployment environment variables.
-4. Use strict CORS with your real frontend URL.
+4. Use strict CORS with your real frontend URL (`CLIENT_ORIGIN`).
 
-## Files Added for Deployment
+## Environment Variables
 
-- `render.yaml`: one-click style Render blueprint for frontend, backend, AI layer
-- `.gitignore`: prevents accidental secret commits (`.env`, `.env.*`)
-
-## Deploy Steps 
-
-### 1. Prepare MongoDB Atlas
-
-1. Create an Atlas project and free M0 cluster.
-2. Create DB user and password.
-3. Add network access rules.
-4. Copy connection string for `MONGO_URI`.
-
-### 2. Push Code to GitHub
-
-1. Create a repository in your GitHub account.
-2. Push this project.
-3. Confirm no real secrets are committed.
-
-### 3. Create Render Blueprint
-
-1. In Render dashboard, choose Blueprint deployment.
-2. Select your GitHub repo.
-3. Render detects `render.yaml` and creates 3 services.
-
-### 4. Configure Environment Variables in Render
-
-Backend:
+Hugging Face Space (backend + AI):
 
 - `MONGO_URI` = your Atlas URI
-- `AI_LAYER_URL` = AI service URL from Render
-- `CLIENT_ORIGIN` = frontend URL from Render
-
-AI Layer:
-
+- `CLIENT_ORIGIN` = your Vercel frontend URL
+- `AI_POLL_INTERVAL_MS` = `1500`
 - `GROQ_API_KEY`
 - `HF_TOKEN` and/or `HF_API_KEY`
+- `GROQ_MODEL` = `openai/gpt-oss-120b`
+- `HF_PROVIDER` = `nscale`
+- `HF_IMAGE_MODEL` = `stabilityai/stable-diffusion-xl-base-1.0`
+- `IMAGE_SOURCE` = `pexels`
 - `PEXELS_API_KEY` (if stock image source enabled)
+- Leave `AI_LAYER_URL` unset (defaults to `http://127.0.0.1:8000`).
 
-Frontend:
+Frontend (Vercel):
 
-- `VITE_BACKEND_URL` = backend URL from Render
+- `VITE_BACKEND_URL` = your Hugging Face Space URL
 
-### 5. Validate Health
+## Validate Health
 
 - Backend: `/health`
-- AI Layer: `/health`
+- AI Layer (proxied via backend): `/health/ai`
 - Frontend loads and can create books
-
-## Post-Push Fast Path (Now)
-
-You already pushed code to GitHub. Do this next in Render:
-
-1. Render Dashboard -> New -> Blueprint.
-2. Select your repository and branch `main`.
-3. Confirm 3 services are detected from `render.yaml`:
-  - `bright-minds-frontend`
-  - `bright-minds-backend`
-  - `bright-minds-ai`
-4. Add required secret env vars before first deploy:
-  - Backend: `MONGO_URI`
-  - AI: `GROQ_API_KEY`, and either `HF_TOKEN` or `HF_API_KEY`
-  - Optional AI (if using stock source): `PEXELS_API_KEY`
-5. Click Deploy.
-
-After first deploy, verify and adjust these URLs if your Render service URLs differ from defaults:
-
-- Backend `AI_LAYER_URL` -> `https://bright-minds-ai.onrender.com`
-- Backend `CLIENT_ORIGIN` -> `https://bright-minds-frontend.onrender.com`
-- Frontend `VITE_BACKEND_URL` -> `https://bright-minds-backend.onrender.com`
-
-If Render assigns different domains, replace values accordingly and redeploy affected services.
 
 ## Post-Deployment Checklist
 
@@ -106,7 +56,3 @@ If Render assigns different domains, replace values accordingly and redeploy aff
   - `POST /api/feedback/upgrade-request`
   - `POST /api/feedback/suggestion`
 - Verify no secrets appear in logs
-
-## Important Note
-
-I cannot directly deploy to your GitHub/Render account from this environment without your authenticated credentials/session. This repo is now prepared for secure deployment, and the steps above are ready to run.

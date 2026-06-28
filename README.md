@@ -36,10 +36,11 @@ See full architecture and sequence diagrams in [ARCHITECTURE_DIAGRAM.md](ARCHITE
 
 Best free and easy deployment for this architecture:
 
-- Render (Frontend Static + Backend Web Service + AI Layer Web Service)
+- Vercel (Frontend)
+- Hugging Face Space (Backend + AI Layer in one Docker container)
 - MongoDB Atlas M0 (free tier)
 
-Step-by-step deployment guide: [DEPLOYMENT.md](DEPLOYMENT.md)
+Step-by-step deployment guide: [HF_VERCEL_DEPLOYMENT.md](HF_VERCEL_DEPLOYMENT.md)
 
 High-level flow:
 
@@ -147,11 +148,11 @@ Use this checklist when deploying to production.
 
 ### Reliability
 
-- Run backend and AI layer as separate services.
+- In production, backend and AI layer run together in one container ([Dockerfile](Dockerfile), [start.sh](start.sh)); the backend reaches the AI layer at `http://127.0.0.1:8000`.
 - Add process supervision and auto-restart.
 - Configure health checks:
   - backend: /health
-  - AI layer: /health
+  - AI layer (proxied via backend): /health/ai
 - Persist logs centrally.
 - Add retries/circuit breakers for AI provider outages.
 
