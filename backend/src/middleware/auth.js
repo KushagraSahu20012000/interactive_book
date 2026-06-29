@@ -52,8 +52,8 @@ export function attachAuthOptional(req, res, next) {
   try {
     const payload = jwt.verify(token, jwtSecret);
     req.auth = payload;
-    return next();
   } catch {
-    return res.status(401).json({ message: "Invalid token" });
+    // Optional auth: ignore an invalid/expired token and continue unauthenticated.
   }
+  return next();
 }
